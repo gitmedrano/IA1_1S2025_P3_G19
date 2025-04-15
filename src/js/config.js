@@ -27,7 +27,8 @@ const CONFIG = {
         height: 0.5,
         color: 0x9B59B6,        // Purple
         moveSpeed: 0.4,         // seconds per movement
-        rotationSpeed: Math.PI   // radians per second
+        rotationSpeed: Math.PI,   // radians per second
+        crossFadeDuration: 0.5
     },
 
     // Camera settings

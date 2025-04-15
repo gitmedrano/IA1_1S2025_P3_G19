@@ -1,5 +1,5 @@
 class Robot {
-    constructor(scene, startPosition, maze) {
+    constructor(scene, startPosition, maze, useCube = false) {
         this.scene = scene;
         this.mesh = null;
         this.currentPosition = startPosition;
@@ -8,55 +8,157 @@ class Robot {
         this.maze = maze;
         this.walls = new Set(maze.paredes.map(wall => `${wall[0]},${wall[1]}`));
         this.mixer = null;
-        this.animations = {
-            idle: null,
-            walk: null
-        };
-        this.isWalking = false;
         this.clock = new THREE.Clock();
+        this.useCube = useCube;
+        this.actions = {
+            idle: null,
+            tpose: null,
+            walk: null,
+            run: null
+        };
+        this.weights = {
+            idle: 0,
+            walk: 0,
+            run: 0
+        };
         console.log('[Robot] Initialized at position:', startPosition);
         console.log('[Robot] Walls:', this.walls);
         this.loadRobotModel();
     }
 
     loadRobotModel() {
-        // Use the global THREE.GLTFLoader that's already imported in index.html
-        const loader = new THREE.GLTFLoader();
-        loader.load(
-            '.././src/models/Soldier.glb',  // Updated path to be relative to the js directory
-            (gltf) => {
-                this.mesh = gltf.scene;
-                this.mesh.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
+        if (this.useCube) {
+            // Create a cube
+            const geometry = new THREE.BoxGeometry(
+                CONFIG.robot.size,
+                CONFIG.robot.size,
+                CONFIG.robot.size
+            );
+            const material = new THREE.MeshPhongMaterial({
+                color: CONFIG.robot.color,
+                shininess: 30
+            });
+
+            this.mesh = new THREE.Mesh(geometry, material);
+            this.mesh.castShadow = true;
+            this.mesh.receiveShadow = true;
+
+            // Set initial position
+            this.updatePosition(this.currentPosition);
+            this.scene.add(this.mesh);
+            console.log('[Robot] Cube created and added to scene');
+        } else {
+            // Use the global THREE.GLTFLoader that's already imported in index.html
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                '.././src/models/Soldier.glb',
+                (gltf) => {
+                    this.mesh = gltf.scene;
+                    this.mesh.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+
+                    // Setup animations
+                    this.mixer = new THREE.AnimationMixer(this.mesh);
+                    const animations = gltf.animations;
+
+                    // Debug logging for animations
+                    console.log('[Robot] Available animations:', animations);
+                    if (animations) {
+                        animations.forEach((anim, index) => {
+                            console.log(`[Robot] Animation ${index}: ${anim.name}`);
+                        });
                     }
-                });
 
-                // Setup animations
-                this.mixer = new THREE.AnimationMixer(this.mesh);
-                const animations = gltf.animations;
+                    if (animations && animations.length >= 3) {
+                        // Set up all available animations
+                        this.actions.idle = this.mixer.clipAction(animations[0]);
+                        this.actions.tpose = this.mixer.clipAction(animations[2]);
+                        this.actions.walk = this.mixer.clipAction(animations[3]);
+                        this.actions.run = this.mixer.clipAction(animations[1]);
 
-                if (animations && animations.length >= 2) {
-                    this.animations.idle = this.mixer.clipAction(animations[0]);
-                    this.animations.walk = this.mixer.clipAction(animations[1]);
-                    this.animations.idle.play();
-                } else {
-                    console.warn('Robot model has insufficient animations');
+                        // Initialize with idle animation
+                        this.setWeight(this.actions.idle, 1);
+                        this.actions.walk.play();
+                    } else {
+                        console.warn('Robot model has insufficient animations');
+                    }
+
+                    // Set initial position
+                    this.updatePosition(this.currentPosition);
+                    this.scene.add(this.mesh);
+                    console.log('[Robot] Robot model loaded and added to scene');
+                },
+                (xhr) => {
+                    console.log(`Loading robot model: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+                },
+                (error) => {
+                    console.error('Error loading robot model:', error);
                 }
+            );
+        }
+    }
 
-                // Set initial position
-                this.updatePosition(this.currentPosition);
-                this.scene.add(this.mesh);
-                console.log('[Robot] Robot model loaded and added to scene');
-            },
-            (xhr) => {
-                console.log(`Loading robot model: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
-            },
-            (error) => {
-                console.error('Error loading robot model:', error);
-            }
-        );
+    setWeight(action, weight) {
+        if (action) {
+            action.enabled = true;
+            action.setEffectiveTimeScale(1);
+            action.setEffectiveWeight(weight);
+        }
+    }
+
+    prepareCrossFade(startAction, endAction, duration) {
+        if (!this.mixer || !startAction || !endAction) return;
+
+        // Make sure all actions are unpaused
+        Object.values(this.actions).forEach(action => {
+            if (action) action.paused = false;
+        });
+
+        // Set up the crossfade
+        this.setWeight(endAction, 1);
+        endAction.time = 0;
+        startAction.crossFadeTo(endAction, duration, true);
+    }
+
+    startWalking() {
+        if (this.useCube) return;
+
+        console.log('[Robot] Starting walk animation');
+        if (this.actions.idle && this.actions.walk) {
+            console.log('[Robot] Actions available:', {
+                idle: this.actions.idle.isRunning(),
+                walk: this.actions.walk.isRunning()
+            });
+            this.prepareCrossFade(this.actions.idle, this.actions.walk, 0.5);
+            this.actions.walk.play();
+        } else {
+            console.warn('[Robot] Missing required animations:', {
+                hasIdle: !!this.actions.idle,
+                hasWalk: !!this.actions.walk
+            });
+        }
+    }
+
+    stopWalking() {
+        if (this.useCube) return;
+
+        console.log('[Robot] Stopping walk animation');
+        if (this.actions.idle && this.actions.walk) {
+            console.log('[Robot] Actions available:', {
+                idle: this.actions.idle.isRunning(),
+                walk: this.actions.walk.isRunning()
+            });
+            this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.5);
+        } else {
+            console.warn('[Robot] Missing required animations:', {
+                hasIdle: !!this.actions.idle,
+                hasWalk: !!this.actions.walk
+            });
+        }
     }
 
     isValidMove(fromPos, toPos) {
@@ -104,6 +206,9 @@ class Robot {
             this.isMoving = true;
             this.targetPosition = position;
 
+            // Start walking animation
+            this.startWalking();
+
             const startPos = new THREE.Vector3(
                 this.currentPosition[0] * CONFIG.maze.cellSize,
                 CONFIG.robot.height / 2,
@@ -119,9 +224,7 @@ class Robot {
             const angle = Math.atan2(direction.x, direction.z);
 
             await this.rotateToAngle(angle);
-            this.startWalking();
             await this.animateMovement(startPos, endPos);
-            this.stopWalking();
 
             this.currentPosition = position;
             console.log('[Robot] Movement completed successfully to', position);
@@ -131,27 +234,34 @@ class Robot {
             return false;
         } finally {
             this.isMoving = false;
-        }
-    }
-
-    startWalking() {
-        if (this.animations.idle && this.animations.walk) {
-            this.isWalking = true;
-            this.animations.idle.crossFadeTo(this.animations.walk, 0.5, false);
-            this.animations.walk.play();
-        }
-    }
-
-    stopWalking() {
-        if (this.animations.idle && this.animations.walk) {
-            this.isWalking = false;
-            this.animations.walk.crossFadeTo(this.animations.idle, 0.5, false);
+            // Stop walking animation
+            // this.stopWalking();
         }
     }
 
     update(delta) {
-        if (this.mixer) {
+        if (this.useCube) {
+            // Add spinning animation to the cube
+            if (this.mesh) {
+                this.mesh.rotation.x += delta * 2;
+                this.mesh.rotation.y += delta * 3;
+                this.mesh.rotation.z += delta * 1.5;
+            }
+        } else if (this.mixer) {
+            // Update animation mixer
             this.mixer.update(delta);
+            console.log('[Robot] Mixer updated, delta:', delta);
+
+            // Update weights
+            this.weights.idle = this.actions.idle ? this.actions.idle.getEffectiveWeight() : 0;
+            this.weights.walk = this.actions.walk ? this.actions.walk.getEffectiveWeight() : 0;
+            this.weights.run = this.actions.run ? this.actions.run.getEffectiveWeight() : 0;
+
+            console.log('[Robot] Current animation weights:', {
+                idle: this.weights.idle,
+                walk: this.weights.walk,
+                run: this.weights.run
+            });
         }
     }
 
@@ -214,10 +324,15 @@ class Robot {
     dispose() {
         if (this.mesh) {
             this.scene.remove(this.mesh);
-            this.mesh.traverse((child) => {
-                if (child.geometry) child.geometry.dispose();
-                if (child.material) child.material.dispose();
-            });
+            if (this.useCube) {
+                if (this.mesh.geometry) this.mesh.geometry.dispose();
+                if (this.mesh.material) this.mesh.material.dispose();
+            } else {
+                this.mesh.traverse((child) => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                });
+            }
         }
     }
 

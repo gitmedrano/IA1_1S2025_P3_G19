@@ -106,6 +106,7 @@
 
             setupLights();
             setupGround();
+            createColumnGrid();
             loadModel();
             setupEventListeners();
         }
@@ -138,6 +139,35 @@
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
+        }
+
+        function createColumnGrid() {
+            const gridSize = 20;
+            const spacing = 4;
+            const columnHeight = 5;
+            const columnRadius = 0.5;
+
+            const columnGeometry = new THREE.CylinderGeometry(columnRadius, columnRadius, columnHeight, 8);
+            const columnMaterial = new THREE.MeshPhongMaterial({
+                color: 0x888888,
+                shininess: 30
+            });
+
+            const startPos = -((gridSize - 1) * spacing) / 2;
+
+            for (let x = 0; x < gridSize; x++) {
+                for (let z = 0; z < gridSize; z++) {
+                    const column = new THREE.Mesh(columnGeometry, columnMaterial);
+                    column.position.set(
+                        startPos + x * spacing,
+                        columnHeight / 2,
+                        startPos + z * spacing
+                    );
+                    column.castShadow = true;
+                    column.receiveShadow = true;
+                    scene.add(column);
+                }
+            }
         }
 
         function loadModel() {
@@ -199,7 +229,8 @@
             switch (event.code) {
                 case 'ArrowUp':
                     if (!isWalking) {
-                        startWalking();
+                        idleAction.crossFadeTo(walkAction, CONFIG.animation.crossFadeDuration, false);
+                        walkAction.play();
                     }
                     break;
                 case 'ArrowLeft':
@@ -222,18 +253,23 @@
 
         function startWalking() {
             isWalking = true;
-            if (idleAction && walkAction) {
-                idleAction.crossFadeTo(walkAction, CONFIG.animation.crossFadeDuration, false);
-                // idleAction.crossFadeTo(walkAction, CONFIG.animation.crossFadeDuration, false);
-                walkAction.play();
+            if (tPoseAction && walkAction) {
+                // tPoseAction.crossFadeTo(idleAction, CONFIG.animation.crossFadeDuration, false);
+
+            } else if (idleAction && walkAction) {
+
             }
+            idleAction.crossFadeTo(walkAction, CONFIG.animation.crossFadeDuration, false);
+            walkAction.play();
         }
 
         function stopWalking() {
             isWalking = false;
-            if (idleAction && walkAction) {
-                walkAction.crossFadeTo(idleAction, CONFIG.animation.crossFadeDuration, false);
-
+            if (walkAction && tPoseAction) {
+                // walkAction.crossFadeTo(tPoseAction, CONFIG.animation.crossFadeDuration, true);
+                tPoseAction.crossFadeTo(idleAction, CONFIG.animation.crossFadeDuration, true);
+                tPoseAction.play();
+                idleAction.play();
             }
         }
 
