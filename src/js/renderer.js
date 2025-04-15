@@ -310,8 +310,8 @@ class MazeRenderer {
                 const markerGroup = new THREE.Group();
 
                 // Calculate exact center position
-                const centerX = position[0] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
-                const centerZ = position[1] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
+                const centerX = position[0] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 16);
+                const centerZ = position[1] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 16);
 
                 // Main marker
                 const pathMarker = new THREE.Mesh(pathGeometry, pathMaterial);
@@ -390,9 +390,9 @@ class MazeRenderer {
 
         // Position marker at cell center
         marker.position.set(
-            position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
+            position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 16,
             0.02, // Just above the floor
-            position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
+            position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 16
         );
 
         this.maze.add(marker);
