@@ -185,6 +185,24 @@ class MazeRenderer {
 
         this.scene.add(this.maze);
         console.log('[Renderer] Maze creation completed');
+
+        // --- Auto-fit camera and controls to maze size ---
+        const mazeWidth = mazeData.ancho * CONFIG.maze.cellSize;
+        const mazeHeight = mazeData.alto * CONFIG.maze.cellSize;
+        const centerX = (mazeData.ancho - 1) * CONFIG.maze.cellSize / 2;
+        const centerZ = (mazeData.alto - 1) * CONFIG.maze.cellSize / 2;
+        const maxDim = Math.max(mazeWidth, mazeHeight);
+        const distance = maxDim * 1.2; // Adjust multiplier for padding
+
+        // Position camera
+        this.camera.position.set(centerX, distance, centerZ + distance);
+        this.camera.lookAt(centerX, 0, centerZ);
+
+        // Update controls target
+        if (this.controls) {
+            this.controls.target.set(centerX, 0, centerZ);
+            this.controls.update();
+        }
     }
 
     createMarker(color) {

@@ -46,7 +46,7 @@ class MazeApp {
         this.renderer.createMaze(mazeData);
 
         // Create robot at start position with maze data for collision detection
-        this.robot = new Robot(this.renderer.scene, mazeData.inicio, mazeData, false);
+        this.robot = new Robot(this.renderer.scene, mazeData.inicio, mazeData, true);
         this.robot.startWalking();
 
         // Reset stats
