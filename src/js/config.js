@@ -36,7 +36,7 @@ const CONFIG = {
         near: 0.1,
         far: 1000,
         position: {
-            x: 20,
+            x: 10,
             y: 25,
             z: 20
         },
@@ -47,14 +47,17 @@ const CONFIG = {
         },
         controls: {
             minDistance: 5,
-            maxDistance: 100,
+            maxDistance: 200,
             minPolarAngle: 0,
-            maxPolarAngle: 85,
+            maxPolarAngle: 80,
             enableDamping: true,
-            dampingFactor: 0.05,
-            rotateSpeed: 0.5,
+            dampingFactor: 0.1,
+            rotateSpeed: 1.0,
             zoomSpeed: 1.2,
-            panSpeed: 0.8
+            panSpeed: 1.0,
+            enableRotate: true,
+            autoRotate: false,
+            autoRotateSpeed: 2.0
         }
     },
 
@@ -63,4 +66,4 @@ const CONFIG = {
         stepDelay: 500,         // milliseconds between each step
         pathShowDelay: 100      // milliseconds between showing each path segment
     }
-}; 
+};

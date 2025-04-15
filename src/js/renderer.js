@@ -91,12 +91,23 @@ class MazeRenderer {
         console.log('[Renderer] Setting up controls');
         try {
             this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-            this.controls.enableDamping = true;
-            this.controls.dampingFactor = 0.05;
+
+            // Apply all control settings from config
+            const controlConfig = CONFIG.camera.controls;
+            this.controls.enableDamping = controlConfig.enableDamping;
+            this.controls.dampingFactor = controlConfig.dampingFactor;
             this.controls.screenSpacePanning = false;
-            this.controls.minDistance = 5;
-            this.controls.maxDistance = 50;
-            this.controls.maxPolarAngle = Math.PI / 2;
+            this.controls.minDistance = controlConfig.minDistance;
+            this.controls.maxDistance = controlConfig.maxDistance;
+            this.controls.minPolarAngle = controlConfig.minPolarAngle * Math.PI / 180;
+            this.controls.maxPolarAngle = controlConfig.maxPolarAngle * Math.PI / 180;
+            this.controls.rotateSpeed = controlConfig.rotateSpeed;
+            this.controls.zoomSpeed = controlConfig.zoomSpeed;
+            this.controls.panSpeed = controlConfig.panSpeed;
+            this.controls.enableRotate = controlConfig.enableRotate;
+            this.controls.autoRotate = controlConfig.autoRotate;
+            this.controls.autoRotateSpeed = controlConfig.autoRotateSpeed;
+
             console.log('[Renderer] Controls setup completed');
         } catch (error) {
             console.error('[Renderer] Error setting up OrbitControls:', error);
@@ -155,6 +166,15 @@ class MazeRenderer {
             wall.castShadow = true;
             wall.receiveShadow = true;
             this.maze.add(wall);
+
+            // Add coordinate label above the wall
+            const label = this.createWallLabel(`[${x},${z}]`);
+            label.position.set(
+                x * CONFIG.maze.cellSize,
+                CONFIG.maze.wallHeight + 0.1, // Slightly above the wall
+                z * CONFIG.maze.cellSize
+            );
+            this.maze.add(label);
         });
 
         // Add start marker with glow effect
@@ -208,6 +228,34 @@ class MazeRenderer {
         markerGroup.add(glow);
 
         return markerGroup;
+    }
+
+    createWallLabel(text) {
+        // Create canvas for text
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 64;
+        canvas.height = 32;
+
+        // Draw text
+        context.fillStyle = 'white';
+        context.font = 'bold 24px Arial';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+        // Create texture
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({
+            map: texture,
+            transparent: true
+        });
+
+        // Create sprite
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(0.5, 0.25, 1);
+
+        return sprite;
     }
 
     onWindowResize() {
