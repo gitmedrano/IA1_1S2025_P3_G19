@@ -28,34 +28,16 @@ class Robot {
             return false;
         }
 
-        // Check if movement is diagonal
-        if (Math.abs(toX - fromX) + Math.abs(toY - fromY) > 1) {
-            console.log('[Robot] Diagonal movement not allowed:', fromPos, 'to', toPos);
+        // Calculate movement delta
+        const dx = Math.abs(toX - fromX);
+        const dy = Math.abs(toY - fromY);
+
+        // Only allow single-step orthogonal movements
+        if (dx + dy !== 1) {
+            console.log('[Robot] Invalid movement - must be single step orthogonal:', fromPos, 'to', toPos);
             return false;
         }
 
-        // Check for wall collision along the path
-        if (fromX === toX) { // Vertical movement
-            const minY = Math.min(fromY, toY);
-            const maxY = Math.max(fromY, toY);
-            for (let y = minY; y <= maxY; y++) {
-                if (this.walls.has(`${fromX},${y}`)) {
-                    console.log('[Robot] Wall collision detected at:', [fromX, y]);
-                    return false;
-                }
-            }
-        } else if (fromY === toY) { // Horizontal movement
-            const minX = Math.min(fromX, toX);
-            const maxX = Math.max(fromX, toX);
-            for (let x = minX; x <= maxX; x++) {
-                if (this.walls.has(`${x},${fromY}`)) {
-                    console.log('[Robot] Wall collision detected at:', [x, fromY]);
-                    return false;
-                }
-            }
-        }
-
-        console.log('[Robot] Move validated from', fromPos, 'to', toPos);
         return true;
     }
 
@@ -71,11 +53,11 @@ class Robot {
             return false;
         }
 
-        console.log('[Robot] Starting movement from', this.currentPosition, 'to', position);
-        this.isMoving = true;
-        this.targetPosition = position;
-
         try {
+            console.log('[Robot] Starting movement from', this.currentPosition, 'to', position);
+            this.isMoving = true;
+            this.targetPosition = position;
+
             // Calculate world positions
             const startPos = new THREE.Vector3(
                 this.currentPosition[0] * CONFIG.maze.cellSize,

@@ -5,6 +5,8 @@ class MazeApp {
         this.robot = null;
         this.currentAlgorithm = null;
         this.isSimulating = false;
+        this.currentPath = null;
+        this.currentPathIndex = 0;
         console.log('[MazeApp] Initializing application');
 
         this.setupEventListeners();
@@ -62,54 +64,63 @@ class MazeApp {
         const startBtn = document.getElementById('startBtn');
         startBtn.disabled = true;
 
-        const startTime = performance.now();
-        let steps = 0;
+        try {
+            const startTime = performance.now();
+            let steps = 0;
 
-        // Create algorithm instance based on selection
-        let algorithm;
-        const mazeData = this.mazeLoader.getMazeData();
+            // Create algorithm instance
+            let algorithm;
+            const mazeData = this.mazeLoader.getMazeData();
 
-        switch (this.currentAlgorithm) {
-            case 'bfs':
-                algorithm = new BFSAlgorithm(mazeData);
-                break;
-            case 'dfs':
-                algorithm = new DFSAlgorithm(mazeData);
-                break;
-            case 'astar':
-                algorithm = new AStarAlgorithm(mazeData);
-                break;
-            default:
-                console.error('[MazeApp] Invalid algorithm selected:', this.currentAlgorithm);
+            switch (this.currentAlgorithm) {
+                case 'bfs':
+                    algorithm = new BFSAlgorithm(mazeData);
+                    break;
+                case 'dfs':
+                    algorithm = new DFSAlgorithm(mazeData);
+                    break;
+                case 'astar':
+                    algorithm = new AStarAlgorithm(mazeData);
+                    break;
+                default:
+                    throw new Error('Invalid algorithm selected');
+            }
+
+            // Find path first
+            this.currentPath = await algorithm.search();
+
+            if (!this.currentPath) {
+                alert('No path found!');
                 return;
-        }
+            }
 
-        // Execute search with visualization
-        const onVisit = async (position) => {
-            const success = await this.robot.moveTo(position);
-            if (success) {
+            console.log('[MazeApp] Path found:', this.currentPath);
+
+            // Follow path step by step
+            for (let i = 1; i < this.currentPath.length; i++) {
+                const success = await this.robot.moveTo(this.currentPath[i]);
+                if (!success) {
+                    console.error('[MazeApp] Failed to move robot to position:', this.currentPath[i]);
+                    break;
+                }
                 steps++;
                 const timeElapsed = (performance.now() - startTime) / 1000;
                 this.updateStats(steps, timeElapsed);
-            } else {
-                console.warn('[MazeApp] Failed to move robot to position:', position);
+                // Add small delay between moves
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
-        };
 
-        const path = await algorithm.search(onVisit);
+            // Highlight the complete path
+            this.renderer.highlightPath(this.currentPath);
+            console.log('[MazeApp] Simulation completed');
 
-        if (path) {
-            console.log('[MazeApp] Path found:', path);
-            // Highlight the final path
-            this.renderer.highlightPath(path);
-        } else {
-            console.error('[MazeApp] No path found!');
-            alert('No path found!');
+        } catch (error) {
+            console.error('[MazeApp] Simulation error:', error);
+            alert('An error occurred during simulation');
+        } finally {
+            this.isSimulating = false;
+            startBtn.disabled = false;
         }
-
-        startBtn.disabled = false;
-        this.isSimulating = false;
-        console.log('[MazeApp] Simulation completed');
     }
 
     resetSimulation() {
