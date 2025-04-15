@@ -32,29 +32,29 @@ const CONFIG = {
 
     // Camera settings
     camera: {
-        fov: 50, // Reduced FOV for better perspective
+        fov: 45,
         near: 0.1,
         far: 1000,
         position: {
-            x: 15,
-            y: 20,
-            z: 15
+            x: 20,
+            y: 25,
+            z: 20
         },
         lookAt: {
-            x: 5, // Look at center of maze
+            x: 7,
             y: 0,
-            z: 5
+            z: 7
         },
         controls: {
-            minDistance: 2,      // Minimum zoom distance
-            maxDistance: 100,    // Maximum zoom distance
-            minPolarAngle: 0,    // Minimum vertical rotation (0 = top view)
-            maxPolarAngle: 85,   // Maximum vertical rotation (in degrees)
-            enableDamping: true, // Smooth camera movements
-            dampingFactor: 0.05, // Camera movement inertia
-            rotateSpeed: 0.5,    // Mouse rotation sensitivity
-            zoomSpeed: 1.2,      // Mouse zoom sensitivity
-            panSpeed: 0.8        // Mouse pan sensitivity
+            minDistance: 5,
+            maxDistance: 100,
+            minPolarAngle: 0,
+            maxPolarAngle: 85,
+            enableDamping: true,
+            dampingFactor: 0.05,
+            rotateSpeed: 0.5,
+            zoomSpeed: 1.2,
+            panSpeed: 0.8
         }
     },
 
