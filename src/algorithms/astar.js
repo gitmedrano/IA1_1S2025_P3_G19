@@ -28,7 +28,7 @@ class AStar {
 
             // Visualize current exploration
             if (renderer) {
-                renderer.showExplorationStep(current);
+                renderer.showExplorationStep(current, 0x9C27B0);
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
 
@@ -61,7 +61,7 @@ class AStar {
 
                     // Visualize considering this neighbor
                     if (renderer) {
-                        renderer.showExplorationStep(neighbor, false);
+                        renderer.showExplorationStep(neighbor, 0x9C27B0, false);
                         await new Promise(resolve => setTimeout(resolve, 50));
                     }
                 }

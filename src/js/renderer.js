@@ -371,7 +371,7 @@ class MazeRenderer {
         return sprite;
     }
 
-    showExplorationStep(position, isBacktracking = false) {
+    showExplorationStep(position, colorAlgorithm, isBacktracking = false) {
         // Create marker for explored cell
         const markerGeometry = new THREE.BoxGeometry(
             CONFIG.maze.cellSize * 0.8,
@@ -381,7 +381,7 @@ class MazeRenderer {
 
         // Different colors for exploration vs backtracking
         const markerMaterial = new THREE.MeshBasicMaterial({
-            color: isBacktracking ? 0xFF6B6B : 0x4CAF50,
+            color: isBacktracking ? 0xFF6B6B : colorAlgorithm,
             transparent: true,
             opacity: 0.5
         });

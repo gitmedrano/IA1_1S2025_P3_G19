@@ -25,7 +25,7 @@ class BFS {
 
             // Visualize current exploration
             if (renderer) {
-                renderer.showExplorationStep(current);
+                renderer.showExplorationStep(current, 0x4CAF50);
                 // Add delay to see the exploration
                 await new Promise(resolve => setTimeout(resolve, 100));
             }

@@ -23,7 +23,7 @@ class DFS {
         // Mark as visited and show exploration
         this.visited.add(currentStr);
         if (renderer) {
-            renderer.showExplorationStep(current);
+            renderer.showExplorationStep(current, 0xD32F2F);
             // Add delay to see the exploration
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -46,7 +46,7 @@ class DFS {
                 }
                 // Show backtracking
                 if (renderer) {
-                    renderer.showExplorationStep(neighbor, true);
+                    renderer.showExplorationStep(neighbor, 0xD32F2F, true);
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
             }
