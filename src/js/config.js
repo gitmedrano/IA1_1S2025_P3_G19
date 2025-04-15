@@ -23,7 +23,7 @@ const CONFIG = {
 
     // Robot settings
     robot: {
-        size: 0.3,
+        size: 0.6,
         height: 0.5,
         color: 0x9B59B6,        // Purple
         moveSpeed: 0.5,         // seconds per movement
