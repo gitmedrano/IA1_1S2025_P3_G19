@@ -17,11 +17,7 @@ const CONFIG = {
             outerWall: 0x34495e, // Dark blue for outer walls
             start: 0x2ECC71,    // Green
             end: 0xE74C3C,      // Red
-            paths: {
-                bfs: 0xF1C40F,  // Yellow
-                dfs: 0xE67E22,  // Orange
-                astar: 0x9B59B6 // Purple
-            }
+            path: 0xF1C40F      // Yellow - single color for all paths
         }
     },
 

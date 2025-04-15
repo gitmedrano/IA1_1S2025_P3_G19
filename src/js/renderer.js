@@ -227,16 +227,16 @@ class MazeRenderer {
 
     highlightPath(path, algorithm = 'astar') {
         if (!path || !path.length) return;
-        console.log('[Renderer] Highlighting path for algorithm:', algorithm);
+        console.log('[Renderer] Highlighting path');
 
-        // Get the color for the current algorithm
-        const pathColor = CONFIG.maze.colors.paths[algorithm] || CONFIG.maze.colors.paths.astar;
+        // Use single path color
+        const pathColor = CONFIG.maze.colors.path;
 
-        // Create path markers with glowing effect
+        // Create path markers with glowing effect - using cell size with small margin
         const pathGeometry = new THREE.BoxGeometry(
-            CONFIG.maze.cellSize * 0.5,
-            0.1,
-            CONFIG.maze.cellSize * 0.5
+            CONFIG.maze.cellSize * 0.9, // 90% of cell size for small wall clearance
+            0.05,                       // Slightly thicker for better visibility
+            CONFIG.maze.cellSize * 0.9  // 90% of cell size for small wall clearance
         );
 
         // Create materials for the path markers
@@ -259,23 +259,27 @@ class MazeRenderer {
                 // Create path marker group
                 const markerGroup = new THREE.Group();
 
+                // Calculate exact center position of the cell
+                const centerX = position[0] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
+                const centerZ = position[1] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
+
                 // Main marker
                 const pathMarker = new THREE.Mesh(pathGeometry, pathMaterial);
                 pathMarker.position.set(
-                    position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
-                    0.05,
-                    position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
+                    centerX,
+                    0.01,
+                    centerZ
                 );
                 markerGroup.add(pathMarker);
 
-                // Glow effect
+                // Glow effect - same size as marker for consistency
                 const glowMarker = new THREE.Mesh(pathGeometry.clone(), glowMaterial);
-                glowMarker.scale.set(1.2, 1, 1.2); // Make glow slightly larger
+                glowMarker.scale.set(1.05, 1, 1.05); // Just slightly larger for glow effect
                 glowMarker.position.copy(pathMarker.position);
                 markerGroup.add(glowMarker);
 
                 // Add number marker for step sequence
-                if (index > 0 && index < path.length - 1) { // Don't add numbers to start and end positions
+                if (index > 0 && index < path.length - 1) {
                     const stepNumber = this.createStepNumber(index, position, pathColor);
                     markerGroup.add(stepNumber);
                 }
@@ -309,15 +313,15 @@ class MazeRenderer {
             opacity: 0.8
         });
 
-        // Create sprite
+        // Create sprite and position it at cell center
         const sprite = new THREE.Sprite(material);
         sprite.position.set(
-            position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
+            position[0] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2),
             0.3, // Slightly above the path marker
-            position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
+            position[1] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2)
         );
         sprite.scale.set(0.5, 0.5, 1);
 
         return sprite;
     }
-} 
+}
