@@ -122,6 +122,10 @@ class Robot {
         this.setWeight(endAction, 1);
         endAction.time = 0;
         startAction.crossFadeTo(endAction, duration, true);
+
+        // Play both actions during transition
+        startAction.play();
+        endAction.play();
     }
 
     startWalking() {
@@ -133,8 +137,8 @@ class Robot {
                 idle: this.actions.idle.isRunning(),
                 walk: this.actions.walk.isRunning()
             });
-            this.prepareCrossFade(this.actions.idle, this.actions.walk, 0.5);
-            this.actions.walk.play();
+            this.prepareCrossFade(this.actions.idle, this.actions.walk, 0.2); // Faster transition
+            this.actions.walk.setLoop(THREE.LoopRepeat, Infinity); // Make walk animation loop
         } else {
             console.warn('[Robot] Missing required animations:', {
                 hasIdle: !!this.actions.idle,
@@ -152,7 +156,7 @@ class Robot {
                 idle: this.actions.idle.isRunning(),
                 walk: this.actions.walk.isRunning()
             });
-            this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.5);
+            this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.2); // Faster transition
         } else {
             console.warn('[Robot] Missing required animations:', {
                 hasIdle: !!this.actions.idle,
