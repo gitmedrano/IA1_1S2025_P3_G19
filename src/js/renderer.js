@@ -225,32 +225,99 @@ class MazeRenderer {
         this.renderer.render(this.scene, this.camera);
     }
 
-    highlightPath(path) {
+    highlightPath(path, algorithm = 'astar') {
         if (!path || !path.length) return;
-        console.log('[Renderer] Highlighting path:', path);
+        console.log('[Renderer] Highlighting path for algorithm:', algorithm);
 
+        // Get the color for the current algorithm
+        const pathColor = CONFIG.maze.colors.paths[algorithm] || CONFIG.maze.colors.paths.astar;
+
+        // Create path markers with glowing effect
         const pathGeometry = new THREE.BoxGeometry(
             CONFIG.maze.cellSize * 0.5,
             0.1,
             CONFIG.maze.cellSize * 0.5
         );
+
+        // Create materials for the path markers
         const pathMaterial = new THREE.MeshBasicMaterial({
-            color: CONFIG.maze.colors.path,
+            color: pathColor,
             transparent: true,
             opacity: 0.7
         });
 
+        // Create glow material
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: pathColor,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        });
+
         path.forEach((position, index) => {
             setTimeout(() => {
+                // Create path marker group
+                const markerGroup = new THREE.Group();
+
+                // Main marker
                 const pathMarker = new THREE.Mesh(pathGeometry, pathMaterial);
                 pathMarker.position.set(
-                    position[0] * CONFIG.maze.cellSize,
+                    position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
                     0.05,
-                    position[1] * CONFIG.maze.cellSize
+                    position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
                 );
-                this.maze.add(pathMarker);
+                markerGroup.add(pathMarker);
+
+                // Glow effect
+                const glowMarker = new THREE.Mesh(pathGeometry.clone(), glowMaterial);
+                glowMarker.scale.set(1.2, 1, 1.2); // Make glow slightly larger
+                glowMarker.position.copy(pathMarker.position);
+                markerGroup.add(glowMarker);
+
+                // Add number marker for step sequence
+                if (index > 0 && index < path.length - 1) { // Don't add numbers to start and end positions
+                    const stepNumber = this.createStepNumber(index, position, pathColor);
+                    markerGroup.add(stepNumber);
+                }
+
+                this.maze.add(markerGroup);
                 console.log('[Renderer] Added path marker at:', position);
             }, index * CONFIG.animation.pathShowDelay);
         });
+    }
+
+    createStepNumber(number, position, color) {
+        // Create canvas for text
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 64;
+        canvas.height = 64;
+
+        // Draw text
+        context.fillStyle = '#ffffff';
+        context.font = 'bold 32px Arial';
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText(number.toString(), 32, 32);
+
+        // Create texture
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({
+            map: texture,
+            color: color,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        // Create sprite
+        const sprite = new THREE.Sprite(material);
+        sprite.position.set(
+            position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
+            0.3, // Slightly above the path marker
+            position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
+        );
+        sprite.scale.set(0.5, 0.5, 1);
+
+        return sprite;
     }
 } 

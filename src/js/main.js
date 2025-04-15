@@ -110,8 +110,8 @@ class MazeApp {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
 
-            // Highlight the complete path
-            this.renderer.highlightPath(this.currentPath);
+            // Highlight the complete path with the current algorithm's color
+            this.renderer.highlightPath(this.currentPath, this.currentAlgorithm);
             console.log('[MazeApp] Simulation completed');
 
         } catch (error) {

@@ -8,16 +8,20 @@ const CONFIG = {
 
     // Maze settings
     maze: {
-        cellSize: 1,
-        wallHeight: 1.5,
-        wallThickness: 0.1,
+        cellSize: 1,           // Size of each cell in the maze
+        wallHeight: 0.1,       // Height of the walls (you can adjust this value)
+        wallThickness: 0.1,    // Thickness of the walls
         colors: {
             floor: 0x808080,    // Gray
             wall: 0x4A90E2,     // Blue
             outerWall: 0x34495e, // Dark blue for outer walls
             start: 0x2ECC71,    // Green
             end: 0xE74C3C,      // Red
-            path: 0xF1C40F      // Yellow
+            paths: {
+                bfs: 0xF1C40F,  // Yellow
+                dfs: 0xE67E22,  // Orange
+                astar: 0x9B59B6 // Purple
+            }
         }
     },
 
