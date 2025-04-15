@@ -26,7 +26,7 @@ class AStarAlgorithm {
 
     getNeighbors(position) {
         const [x, y] = position;
-        // Define directions with costs (diagonal movements cost more)
+        // Only orthogonal movements (no diagonals)
         const directions = [
             [0, 1],   // right
             [1, 0],   // down
@@ -34,23 +34,53 @@ class AStarAlgorithm {
             [-1, 0]   // up
         ];
 
-        const validNeighbors = directions
-            .map(([dx, dy]) => {
-                const newX = x + dx;
-                const newY = y + dy;
-                if (this.isValid(newX, newY)) {
-                    return [newX, newY];
+        const validNeighbors = [];
+
+        for (const [dx, dy] of directions) {
+            const newX = x + dx;
+            const newY = y + dy;
+
+            // Check if the move is valid (within bounds and no wall)
+            if (this.isValid(newX, newY)) {
+                // Additional check for wall collision between current position and target
+                if (this.isPathClear(x, y, newX, newY)) {
+                    validNeighbors.push([newX, newY]);
+                } else {
+                    console.log('[A*] Wall blocks path between', [x, y], 'and', [newX, newY]);
                 }
-                return null;
-            })
-            .filter(pos => pos !== null);
+            }
+        }
 
         console.log('[A*] Valid neighbors for', position, ':', validNeighbors);
         return validNeighbors;
     }
 
+    isPathClear(x1, y1, x2, y2) {
+        // For orthogonal movements, check if there's a wall in between
+        if (x1 === x2) {
+            // Vertical movement
+            const minY = Math.min(y1, y2);
+            const maxY = Math.max(y1, y2);
+            for (let y = minY; y <= maxY; y++) {
+                if (this.walls.has(`${x1},${y}`)) {
+                    return false;
+                }
+            }
+        } else if (y1 === y2) {
+            // Horizontal movement
+            const minX = Math.min(x1, x2);
+            const maxX = Math.max(x1, x2);
+            for (let x = minX; x <= maxX; x++) {
+                if (this.walls.has(`${x},${y1}`)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     heuristic(position, goal) {
-        // Manhattan distance
+        // Manhattan distance (no diagonals)
         const h = Math.abs(position[0] - goal[0]) + Math.abs(position[1] - goal[1]);
         console.log('[A*] Heuristic for', position, 'to', goal, ':', h);
         return h;
@@ -107,10 +137,18 @@ class AStarAlgorithm {
             }
 
             openSet.splice(lowestIndex, 1);
+            const closedSet = new Set();
+            closedSet.add(current.toString());
 
             for (const neighbor of this.getNeighbors(current)) {
-                const tentativeGScore = gScore.get(current.toString()) + 1;
                 const neighborStr = neighbor.toString();
+
+                // Skip if we've already processed this neighbor
+                if (closedSet.has(neighborStr)) {
+                    continue;
+                }
+
+                const tentativeGScore = gScore.get(current.toString()) + 1;
 
                 if (!gScore.has(neighborStr) || tentativeGScore < gScore.get(neighborStr)) {
                     cameFrom.set(neighborStr, current);

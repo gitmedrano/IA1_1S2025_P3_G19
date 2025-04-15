@@ -1,121 +1,161 @@
 # MazeBot - 3D Maze Solving Simulator
 
-A web-based 3D maze solving simulator that demonstrates various pathfinding algorithms using Three.js for visualization.
+## Project Structure
+```
+IA1_1S2025_P3_G19/
+├── index.html              # Main application entry point
+├── src/
+│   ├── js/
+│   │   ├── config.js      # Configuration settings
+│   │   ├── mazeLoader.js  # JSON maze file loader
+│   │   ├── renderer.js    # Three.js visualization
+│   │   ├── robot.js       # Robot movement and animation
+│   │   └── main.js        # Main application logic
+│   ├── algorithms/
+│   │   ├── bfs.js         # Breadth-First Search implementation
+│   │   ├── dfs.js         # Depth-First Search implementation
+│   │   └── astar.js       # A* Search implementation
+│   └── css/
+│       └── styles.css     # Application styling
+└── sample_maze.json       # Example maze file
+```
 
 ## Features
-
 - Interactive 3D visualization of maze solving algorithms
-- Support for multiple pathfinding algorithms:
+- Three pathfinding algorithms:
   - Breadth-First Search (BFS)
   - Depth-First Search (DFS)
   - A* Search
-- Animated robot movement through the maze
-- Real-time statistics tracking
+- Real-time visualization of robot movement
+- Camera controls for viewing from different angles
 - Custom maze loading via JSON files
-- Responsive design
+- Real-time statistics tracking
 
-## Getting Started
+## Technologies Used
+- Three.js for 3D rendering
+- Native JavaScript (ES6+)
+- HTML5 & CSS3
+- JSON for maze data
 
-### Prerequisites
-
-- A modern web browser with WebGL support
-- Local development server (recommended)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/mazebot.git
-cd mazebot
-```
-
-2. Start a local server. You can use Python's built-in server:
-```bash
-# Python 3
-python -m http.server 8000
-```
-
-3. Open your browser and navigate to `http://localhost:8000`
-
-## Usage
-
-1. Load a maze by clicking the file input button and selecting a JSON maze file
-2. Select a pathfinding algorithm from the dropdown menu
-3. Click "Start Simulation" to begin the maze solving process
-4. Use the mouse to rotate and zoom the 3D view:
-   - Left click + drag to rotate
-   - Right click + drag to pan
-   - Scroll to zoom
+## Setup and Running
+1. Clone the repository
+2. Start a local server:
+   ```bash
+   # Using Python 3
+   python -m http.server 5500
+   ```
+3. Open your browser and navigate to `http://localhost:5500`
 
 ## Maze File Format
-
-Mazes are defined in JSON format with the following structure:
-
 ```json
 {
-    "ancho": 5,
-    "alto": 5,
-    "inicio": [0, 0],
-    "fin": [4, 4],
-    "paredes": [
-        [0, 1],
+    "ancho": 10,    // Width of the maze
+    "alto": 10,     // Height of the maze
+    "inicio": [0, 0], // Start position [x, y]
+    "fin": [9, 9],   // End position [x, y]
+    "paredes": [     // Wall positions
+        [1, 0],
         [1, 1],
-        [2, 1]
+        [1, 2]
+        // ... more wall positions
     ]
 }
 ```
 
-- `ancho`: Width of the maze
-- `alto`: Height of the maze
-- `inicio`: Starting position [x, y]
-- `fin`: Goal position [x, y]
-- `paredes`: Array of wall positions [x, y]
+## Components
 
-## Algorithm Details
+### 1. Main Application (main.js)
+- Initializes the application
+- Handles user interactions
+- Manages the simulation state
+- Coordinates between components
 
-### Breadth-First Search (BFS)
-- Explores the maze level by level
-- Guarantees the shortest path
-- Good for unweighted graphs
-- Memory intensive
+### 2. Maze Loader (mazeLoader.js)
+- Handles JSON file loading
+- Validates maze data
+- Dispatches maze loaded events
 
-### Depth-First Search (DFS)
-- Explores as far as possible along each branch
-- May not find the shortest path
-- Memory efficient
-- Good for maze generation
+### 3. Renderer (renderer.js)
+- Manages Three.js scene
+- Handles 3D visualization
+- Controls camera and lighting
+- Manages maze rendering
 
-### A* Search
-- Uses heuristics to guide the search
-- Guarantees the shortest path
-- More efficient than BFS for most cases
-- Uses Manhattan distance as heuristic
+### 4. Robot (robot.js)
+- Controls robot movement
+- Handles animations
+- Manages collision detection
 
-## Technical Architecture
+### 5. Search Algorithms
+- **BFS (bfs.js)**: Breadth-First Search implementation
+  - Explores maze level by level
+  - Guarantees shortest path
+  - Memory intensive
 
-### Components
+- **DFS (dfs.js)**: Depth-First Search implementation
+  - Explores as far as possible along branches
+  - Memory efficient
+  - May not find shortest path
 
-- `MazeApp`: Main application controller
-- `MazeLoader`: Handles JSON file loading and validation
-- `MazeRenderer`: Manages Three.js scene and visualization
-- `Robot`: Controls robot movement and animation
-- Search Algorithms: Separate implementations for each algorithm
+- **A* (astar.js)**: A* Search implementation
+  - Uses heuristics for intelligent searching
+  - Combines BFS efficiency with informed search
+  - Generally finds optimal path
 
-### Technologies Used
+## Usage
+1. Load a maze file using the file input
+2. Select a pathfinding algorithm
+3. Click "Start Simulation" to begin
+4. Use mouse controls to view the maze:
+   - Left click + drag: Rotate
+   - Right click + drag: Pan
+   - Scroll: Zoom
 
-- Three.js for 3D rendering
-- Native JavaScript (ES6+)
-- HTML5 File API
-- CSS3 for styling
+## Camera Controls
+- **Rotate**: Left click + drag
+- **Pan**: Right click + drag
+- **Zoom**: Mouse wheel
+- **Reset**: Press 'R' key
 
-## License
+## Statistics
+The application shows:
+- Number of steps taken
+- Time elapsed
+- Current algorithm in use
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Development
+
+### Adding New Algorithms
+1. Create a new file in `src/algorithms/`
+2. Implement the search algorithm class
+3. Add the algorithm option in `index.html`
+4. Register the algorithm in `main.js`
+
+### Modifying the Maze
+1. Follow the JSON format
+2. Ensure walls are within bounds
+3. Verify start and end positions are valid
+
+### Styling
+- Modify `styles.css` for UI changes
+- Update `config.js` for 3D visualization settings
+
+## Troubleshooting
+- **Blank Screen**: Check browser console for errors
+- **Loading Issues**: Verify JSON file format
+- **Performance Issues**: Adjust CONFIG settings in config.js
+
+## Browser Support
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
 
 ## Contributing
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+This project is licensed under the MIT License.
