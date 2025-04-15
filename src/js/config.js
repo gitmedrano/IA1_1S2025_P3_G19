@@ -3,7 +3,7 @@ const CONFIG = {
     scene: {
         backgroundColor: 0x87CEEB, // Sky blue
         fogColor: 0xFFFFFF,
-        fogDensity: 0.01
+        fogDensity: 0.001 // Reduced fog density for better visibility
     },
 
     // Maze settings
@@ -14,6 +14,7 @@ const CONFIG = {
         colors: {
             floor: 0x808080,    // Gray
             wall: 0x4A90E2,     // Blue
+            outerWall: 0x34495e, // Dark blue for outer walls
             start: 0x2ECC71,    // Green
             end: 0xE74C3C,      // Red
             path: 0xF1C40F      // Yellow
@@ -31,18 +32,29 @@ const CONFIG = {
 
     // Camera settings
     camera: {
-        fov: 75,
+        fov: 50, // Reduced FOV for better perspective
         near: 0.1,
         far: 1000,
         position: {
-            x: 10,
-            y: 15,
-            z: 10
+            x: 15,
+            y: 20,
+            z: 15
         },
         lookAt: {
-            x: 0,
+            x: 5, // Look at center of maze
             y: 0,
-            z: 0
+            z: 5
+        },
+        controls: {
+            minDistance: 2,      // Minimum zoom distance
+            maxDistance: 100,    // Maximum zoom distance
+            minPolarAngle: 0,    // Minimum vertical rotation (0 = top view)
+            maxPolarAngle: 85,   // Maximum vertical rotation (in degrees)
+            enableDamping: true, // Smooth camera movements
+            dampingFactor: 0.05, // Camera movement inertia
+            rotateSpeed: 0.5,    // Mouse rotation sensitivity
+            zoomSpeed: 1.2,      // Mouse zoom sensitivity
+            panSpeed: 0.8        // Mouse pan sensitivity
         }
     },
 
