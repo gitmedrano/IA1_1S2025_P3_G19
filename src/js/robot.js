@@ -7,9 +7,56 @@ class Robot {
         this.isMoving = false;
         this.maze = maze;
         this.walls = new Set(maze.paredes.map(wall => `${wall[0]},${wall[1]}`));
+        this.mixer = null;
+        this.animations = {
+            idle: null,
+            walk: null
+        };
+        this.isWalking = false;
+        this.clock = new THREE.Clock();
         console.log('[Robot] Initialized at position:', startPosition);
         console.log('[Robot] Walls:', this.walls);
-        this.createRobotMesh();
+        this.loadRobotModel();
+    }
+
+    loadRobotModel() {
+        // Use the global THREE.GLTFLoader that's already imported in index.html
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+            '.././src/models/Soldier.glb',  // Updated path to be relative to the js directory
+            (gltf) => {
+                this.mesh = gltf.scene;
+                this.mesh.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+
+                // Setup animations
+                this.mixer = new THREE.AnimationMixer(this.mesh);
+                const animations = gltf.animations;
+
+                if (animations && animations.length >= 2) {
+                    this.animations.idle = this.mixer.clipAction(animations[0]);
+                    this.animations.walk = this.mixer.clipAction(animations[1]);
+                    this.animations.idle.play();
+                } else {
+                    console.warn('Robot model has insufficient animations');
+                }
+
+                // Set initial position
+                this.updatePosition(this.currentPosition);
+                this.scene.add(this.mesh);
+                console.log('[Robot] Robot model loaded and added to scene');
+            },
+            (xhr) => {
+                console.log(`Loading robot model: ${(xhr.loaded / xhr.total * 100).toFixed(2)}%`);
+            },
+            (error) => {
+                console.error('Error loading robot model:', error);
+            }
+        );
     }
 
     isValidMove(fromPos, toPos) {
@@ -47,7 +94,6 @@ class Robot {
             return false;
         }
 
-        // Validate the movement
         if (!this.isValidMove(this.currentPosition, position)) {
             console.log('[Robot] Invalid move requested from', this.currentPosition, 'to', position);
             return false;
@@ -58,7 +104,6 @@ class Robot {
             this.isMoving = true;
             this.targetPosition = position;
 
-            // Calculate world positions
             const startPos = new THREE.Vector3(
                 this.currentPosition[0] * CONFIG.maze.cellSize,
                 CONFIG.robot.height / 2,
@@ -70,15 +115,13 @@ class Robot {
                 position[1] * CONFIG.maze.cellSize
             );
 
-            // Calculate rotation angle
             const direction = endPos.clone().sub(startPos);
             const angle = Math.atan2(direction.x, direction.z);
 
-            // Rotate robot
             await this.rotateToAngle(angle);
-
-            // Move robot
+            this.startWalking();
             await this.animateMovement(startPos, endPos);
+            this.stopWalking();
 
             this.currentPosition = position;
             console.log('[Robot] Movement completed successfully to', position);
@@ -91,80 +134,24 @@ class Robot {
         }
     }
 
-    createRobotMesh() {
-        // Create robot body
-        const bodyGeometry = new THREE.BoxGeometry(
-            CONFIG.robot.size,
-            CONFIG.robot.height,
-            CONFIG.robot.size
-        );
-        const bodyMaterial = new THREE.MeshPhongMaterial({
-            color: CONFIG.robot.color,
-            shininess: 30
-        });
-        this.mesh = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        this.mesh.castShadow = true;
-        this.mesh.receiveShadow = true;
-
-        // Add collision box (for visualization during development)
-        const collisionBoxGeometry = new THREE.BoxGeometry(
-            CONFIG.maze.cellSize * 0.8,
-            CONFIG.robot.height,
-            CONFIG.maze.cellSize * 0.8
-        );
-        const collisionBoxMaterial = new THREE.MeshBasicMaterial({
-            color: 0xff0000,
-            wireframe: true,
-            visible: false // Set to true for debugging collisions
-        });
-        this.collisionBox = new THREE.Mesh(collisionBoxGeometry, collisionBoxMaterial);
-        this.mesh.add(this.collisionBox);
-
-        // Add details to make it more robot-like
-        this.addRobotDetails();
-
-        // Set initial position
-        this.updatePosition(this.currentPosition);
-
-        // Add to scene
-        this.scene.add(this.mesh);
-        console.log('[Robot] Robot mesh created and added to scene');
+    startWalking() {
+        if (this.animations.idle && this.animations.walk) {
+            this.isWalking = true;
+            this.animations.idle.crossFadeTo(this.animations.walk, 0.5, false);
+            this.animations.walk.play();
+        }
     }
 
-    addRobotDetails() {
-        // Add eyes (two small spheres)
-        const eyeGeometry = new THREE.SphereGeometry(CONFIG.robot.size * 0.1, 8, 8);
-        const eyeMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            emissive: 0x444444
-        });
-
-        const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        leftEye.position.set(CONFIG.robot.size * 0.2, CONFIG.robot.height * 0.3, -CONFIG.robot.size * 0.3);
-
-        const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        rightEye.position.set(-CONFIG.robot.size * 0.2, CONFIG.robot.height * 0.3, -CONFIG.robot.size * 0.3);
-
-        this.mesh.add(leftEye);
-        this.mesh.add(rightEye);
-
-        // Add direction indicator (arrow)
-        const arrowGeometry = new THREE.ConeGeometry(CONFIG.robot.size * 0.1, CONFIG.robot.size * 0.2, 8);
-        const arrowMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
-        const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-        arrow.rotation.x = -Math.PI / 2;
-        arrow.position.set(0, CONFIG.robot.height * 0.5, -CONFIG.robot.size * 0.4);
-        this.mesh.add(arrow);
+    stopWalking() {
+        if (this.animations.idle && this.animations.walk) {
+            this.isWalking = false;
+            this.animations.walk.crossFadeTo(this.animations.idle, 0.5, false);
+        }
     }
 
-    updatePosition([x, z]) {
-        const worldX = x * CONFIG.maze.cellSize;
-        const worldZ = z * CONFIG.maze.cellSize;
-        this.mesh.position.set(worldX, CONFIG.robot.height / 2, worldZ);
-
-        // Update collision box position
-        if (this.collisionBox) {
-            this.collisionBox.position.set(0, 0, 0);
+    update(delta) {
+        if (this.mixer) {
+            this.mixer.update(delta);
         }
     }
 
@@ -231,6 +218,14 @@ class Robot {
                 if (child.geometry) child.geometry.dispose();
                 if (child.material) child.material.dispose();
             });
+        }
+    }
+
+    updatePosition([x, z]) {
+        const worldX = x * CONFIG.maze.cellSize;
+        const worldZ = z * CONFIG.maze.cellSize;
+        if (this.mesh) {
+            this.mesh.position.set(worldX, CONFIG.robot.height / 2, worldZ);
         }
     }
 } 

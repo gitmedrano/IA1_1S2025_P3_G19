@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ejemplo Three.js con Modelo Personalizado</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Importar Three.js y el cargador GLTFLoader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Crear la escena y definir un color de fondo.
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xaaaaaa);
+
+        // Configurar la cámara: ángulo de visión, relación de aspecto, planos cercano y lejano.
+        const camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(0, 1, 3); // Posicionar la cámara en la escena.
+
+        // Configurar el renderizador y ajustar su tamaño al del viewport.
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Añadir iluminación ambiental para iluminar uniformemente la escena.
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambientLight);
+
+        // Añadir una luz direccional para resaltar sombras y dar profundidad.
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 10, 7.5);
+        scene.add(directionalLight);
+
+        // Instanciar GLTFLoader para cargar el modelo personalizado.
+        const loader = new THREE.GLTFLoader();
+        loader.load(
+            '../models/robot.glb', // Ruta del modelo glTF.
+            function (gltf) {
+                // Una vez cargado el modelo, se añade a la escena.
+                const model = gltf.scene;
+                model.position.set(0, 0, 0);  // Ajustar la posición según sea necesario.
+                model.scale.set(1, 1, 1);      // Escalar el modelo si es preciso.
+                scene.add(model);
+            },
+            // Función de progreso (opcional).
+            function (xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% cargado');
+            },
+            // Función de error.
+            function (error) {
+                console.error('Error al cargar el modelo:', error);
+            }
+        );
+
+        // Ajustar el renderizador y la cámara cuando se cambia el tamaño de la ventana.
+        window.addEventListener('resize', function () {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Función de animación que actualiza la escena en cada frame.
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

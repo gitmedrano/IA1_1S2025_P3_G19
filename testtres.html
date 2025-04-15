@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Animation Controller</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="info">
+        Controls:<br>
+        ↑ - Walk<br>
+        ← → - Rotate<br>
+        P - Stop walking
+    </div>
+    <div id="loading">Loading model...</div>
+
+    <!-- Three.js and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // ================ Configuration ================
+        const CONFIG = {
+            modelPath: './src/models/Soldier.glb',
+            camera: {
+                fov: 45,
+                near: 0.1,
+                far: 100,
+                position: { x: 0, y: 1.6, z: 3 }
+            },
+            movement: {
+                walkSpeed: 0.05,
+                rotationSpeed: 0.05
+            },
+            animation: {
+                crossFadeDuration: 0.5
+            }
+        };
+
+        // ================ Scene Setup ================
+        let scene, camera, renderer, model, mixer;
+        let idleAction, walkAction;
+        let isWalking = false;
+        const clock = new THREE.Clock();
+
+        function initScene() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xa0a0a0);
+            scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                CONFIG.camera.fov,
+                window.innerWidth / window.innerHeight,
+                CONFIG.camera.near,
+                CONFIG.camera.far
+            );
+            camera.position.set(
+                CONFIG.camera.position.x,
+                CONFIG.camera.position.y,
+                CONFIG.camera.position.z
+            );
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+
+            setupLights();
+            setupGround();
+            loadModel();
+            setupEventListeners();
+        }
+
+        function setupLights() {
+            // Hemisphere light for ambient lighting
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+            hemiLight.position.set(0, 20, 0);
+            scene.add(hemiLight);
+
+            // Directional light for shadows
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(-3, 10, -10);
+            dirLight.castShadow = true;
+            dirLight.shadow.camera.top = 10;
+            dirLight.shadow.camera.bottom = -10;
+            dirLight.shadow.camera.left = -10;
+            dirLight.shadow.camera.right = 10;
+            scene.add(dirLight);
+        }
+
+        function setupGround() {
+            const groundGeometry = new THREE.PlaneGeometry(100, 100);
+            const groundMaterial = new THREE.MeshPhongMaterial({
+                color: 0x999999,
+                depthWrite: false,
+                shininess: 0
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        }
+
+        function loadModel() {
+            const loader = new THREE.GLTFLoader();
+            loader.load(
+                CONFIG.modelPath,
+                function (gltf) {
+                    model = gltf.scene;
+                    model.traverse(function (child) {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                        }
+                    });
+                    scene.add(model);
+
+                    // Setup animations
+                    mixer = new THREE.AnimationMixer(model);
+                    const animations = gltf.animations;
+
+                    if (animations && animations.length >= 2) {
+                        idleAction = mixer.clipAction(animations[0]);
+                        walkAction = mixer.clipAction(animations[1]);
+                        idleAction.play();
+                    } else {
+                        console.warn('Model has insufficient animations');
+                    }
+
+                    document.getElementById('loading').style.display = 'none';
+                },
+                function (xhr) {
+                    const loadingProgress = (xhr.loaded / xhr.total * 100).toFixed(2);
+                    document.getElementById('loading').textContent = `Loading model... ${loadingProgress}%`;
+                },
+                function (error) {
+                    console.error('Error loading model:', error);
+                    document.getElementById('loading').textContent = 'Error loading model!';
+                }
+            );
+        }
+
+        function setupEventListeners() {
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('keydown', onKeyDown);
+            window.addEventListener('keyup', onKeyUp);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function onKeyDown(event) {
+            if (!model) return;
+
+            switch (event.code) {
+                case 'ArrowUp':
+                    if (!isWalking) {
+                        startWalking();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    model.rotation.y += CONFIG.movement.rotationSpeed;
+                    break;
+                case 'ArrowRight':
+                    model.rotation.y -= CONFIG.movement.rotationSpeed;
+                    break;
+                case 'KeyP':
+                    if (isWalking) {
+                        stopWalking();
+                    }
+                    break;
+            }
+        }
+
+        function onKeyUp(event) {
+            if (!model) return;
+        }
+
+        function startWalking() {
+            isWalking = true;
+            if (idleAction && walkAction) {
+                idleAction.crossFadeTo(walkAction, CONFIG.animation.crossFadeDuration, false);
+                walkAction.play();
+            }
+        }
+
+        function stopWalking() {
+            isWalking = false;
+            if (idleAction && walkAction) {
+                walkAction.crossFadeTo(idleAction, CONFIG.animation.crossFadeDuration, false);
+            }
+        }
+
+        // ================ Animation Loop ================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            if (mixer) mixer.update(delta);
+
+            if (isWalking && model) {
+                model.translateZ(-CONFIG.movement.walkSpeed);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize and start animation
+        initScene();
+        animate();
+    </script>
+</body>
+
+</html>

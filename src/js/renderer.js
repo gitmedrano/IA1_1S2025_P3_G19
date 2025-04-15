@@ -7,6 +7,7 @@ class MazeRenderer {
         this.controls = null;
         this.maze = null;
         this.robot = null;
+        this.clock = new THREE.Clock();
         console.log('[Renderer] Initializing...');
 
         this.init();
@@ -269,9 +270,19 @@ class MazeRenderer {
 
     animate() {
         requestAnimationFrame(() => this.animate());
+
+        // Update controls
         if (this.controls) {
             this.controls.update();
         }
+
+        // Update robot animations
+        if (this.robot) {
+            const delta = this.clock.getDelta();
+            this.robot.update(delta);
+        }
+
+        // Render scene
         this.renderer.render(this.scene, this.camera);
     }
 
