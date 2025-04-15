@@ -1,112 +1,133 @@
-class AStarAlgorithm {
+class AStar {
     constructor(maze) {
         this.maze = maze;
-        this.width = maze.ancho;
-        this.height = maze.alto;
-        this.walls = new Set(maze.paredes.map(wall => `${wall[0]},${wall[1]}`));
-        console.log('[A*] Initialized with maze dimensions:', this.width, 'x', this.height);
+        this.visited = new Set();
+        this.parent = new Map();
+        this.gScore = new Map();
+        this.fScore = new Map();
     }
 
-    isValid(x, y) {
-        return x >= 0 && x < this.width &&
-            y >= 0 && y < this.height &&
-            !this.walls.has(`${x},${y}`);
-    }
+    async solve(start, end, renderer) {
+        this.visited.clear();
+        this.parent.clear();
+        this.gScore.clear();
+        this.fScore.clear();
 
-    getNeighbors(position) {
-        const [x, y] = position;
-        const directions = [
-            [0, 1],   // right
-            [1, 0],   // down
-            [0, -1],  // left
-            [-1, 0]   // up
-        ];
-
-        return directions
-            .map(([dx, dy]) => [x + dx, y + dy])
-            .filter(([newX, newY]) => this.isValid(newX, newY));
-    }
-
-    heuristic(position, goal) {
-        return Math.abs(position[0] - goal[0]) + Math.abs(position[1] - goal[1]);
-    }
-
-    async search() {
-        const start = this.maze.inicio;
-        const end = this.maze.fin;
-
-        // Priority queue for open set
-        const openSet = new Set([start.toString()]);
-        const openList = [start];
-
-        // Track visited nodes and paths
-        const cameFrom = new Map();
-        const gScore = new Map();
-        const fScore = new Map();
+        // Priority queue implemented as array for simplicity
+        const openSet = [start];
+        const startStr = start.toString();
 
         // Initialize scores
-        gScore.set(start.toString(), 0);
-        fScore.set(start.toString(), this.heuristic(start, end));
+        this.gScore.set(startStr, 0);
+        this.fScore.set(startStr, this.heuristic(start, end));
 
-        while (openList.length > 0) {
-            // Find node with lowest fScore
-            let currentIndex = 0;
-            let lowestFScore = Infinity;
-
-            for (let i = 0; i < openList.length; i++) {
-                const nodeScore = fScore.get(openList[i].toString());
-                if (nodeScore < lowestFScore) {
-                    lowestFScore = nodeScore;
-                    currentIndex = i;
-                }
-            }
-
-            const current = openList[currentIndex];
+        while (openSet.length > 0) {
+            // Get node with lowest fScore
+            const current = this.getLowestFScore(openSet, end);
             const currentStr = current.toString();
 
-            // Check if we reached the goal
-            if (current[0] === end[0] && current[1] === end[1]) {
-                console.log('[A*] Goal reached!');
-                return this.reconstructPath(cameFrom, current);
+            // Visualize current exploration
+            if (renderer) {
+                renderer.showExplorationStep(current);
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
 
-            // Remove current from open set
-            openList.splice(currentIndex, 1);
-            openSet.delete(currentStr);
+            // Check if we reached the end
+            if (current[0] === end[0] && current[1] === end[1]) {
+                return this.reconstructPath(start, end);
+            }
 
-            // Process neighbors
-            for (const neighbor of this.getNeighbors(current)) {
+            // Remove current from openSet
+            openSet.splice(openSet.findIndex(pos => pos[0] === current[0] && pos[1] === current[1]), 1);
+            this.visited.add(currentStr);
+
+            // Check neighbors
+            const neighbors = this.getValidNeighbors(current);
+            for (const neighbor of neighbors) {
                 const neighborStr = neighbor.toString();
-                const tentativeGScore = gScore.get(currentStr) + 1;
 
-                if (!gScore.has(neighborStr) || tentativeGScore < gScore.get(neighborStr)) {
-                    cameFrom.set(neighborStr, current);
-                    gScore.set(neighborStr, tentativeGScore);
-                    fScore.set(neighborStr, tentativeGScore + this.heuristic(neighbor, end));
+                // Calculate tentative gScore
+                const tentativeGScore = this.gScore.get(currentStr) + 1;
 
-                    if (!openSet.has(neighborStr)) {
-                        openList.push(neighbor);
-                        openSet.add(neighborStr);
+                if (!this.gScore.has(neighborStr) || tentativeGScore < this.gScore.get(neighborStr)) {
+                    // This path is better than any previous one
+                    this.parent.set(neighborStr, current);
+                    this.gScore.set(neighborStr, tentativeGScore);
+                    this.fScore.set(neighborStr, tentativeGScore + this.heuristic(neighbor, end));
+
+                    if (!openSet.some(pos => pos[0] === neighbor[0] && pos[1] === neighbor[1])) {
+                        openSet.push(neighbor);
+                    }
+
+                    // Visualize considering this neighbor
+                    if (renderer) {
+                        renderer.showExplorationStep(neighbor, false);
+                        await new Promise(resolve => setTimeout(resolve, 50));
                     }
                 }
             }
         }
 
-        console.log('[A*] No path found');
-        return null;
+        return null; // No path found
     }
 
-    reconstructPath(cameFrom, current) {
-        const path = [current];
-        let currentStr = current.toString();
+    heuristic(pos, end) {
+        // Manhattan distance
+        return Math.abs(pos[0] - end[0]) + Math.abs(pos[1] - end[1]);
+    }
 
-        while (cameFrom.has(currentStr)) {
-            current = cameFrom.get(currentStr);
-            currentStr = current.toString();
-            path.unshift(current);
+    getLowestFScore(openSet, end) {
+        let lowest = openSet[0];
+        let lowestScore = this.fScore.get(lowest.toString());
+
+        for (const pos of openSet) {
+            const score = this.fScore.get(pos.toString());
+            if (score < lowestScore) {
+                lowest = pos;
+                lowestScore = score;
+            }
         }
 
-        console.log('[A*] Path found:', path);
+        return lowest;
+    }
+
+    getValidNeighbors(position) {
+        const [x, y] = position;
+        const directions = [
+            [0, 1],  // right
+            [1, 0],  // down
+            [0, -1], // left
+            [-1, 0]  // up
+        ];
+
+        return directions
+            .map(([dx, dy]) => [x + dx, y + dy])
+            .filter(([newX, newY]) => {
+                // Check bounds
+                if (newX < 0 || newY < 0 ||
+                    newX >= this.maze.ancho ||
+                    newY >= this.maze.alto) {
+                    return false;
+                }
+                // Check if wall exists at this position
+                return !this.maze.paredes.some(([wallX, wallY]) =>
+                    wallX === newX && wallY === newY
+                );
+            });
+    }
+
+    reconstructPath(start, end) {
+        const path = [end];
+        let current = end.toString();
+        const startStr = start.toString();
+
+        while (current !== startStr) {
+            const parent = this.parent.get(current);
+            if (!parent) break;
+            path.unshift(parent);
+            current = parent.toString();
+        }
+
         return path;
     }
 } 

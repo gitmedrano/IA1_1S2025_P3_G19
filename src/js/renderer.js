@@ -275,16 +275,19 @@ class MazeRenderer {
 
     highlightPath(path, algorithm = 'astar') {
         if (!path || !path.length) return;
-        console.log('[Renderer] Highlighting path');
+        console.log('[Renderer] Highlighting final path');
+
+        // Clear any existing path markers first
+        this.clearExplorationMarkers();
 
         // Use single path color
         const pathColor = CONFIG.maze.colors.path;
 
-        // Create path markers with glowing effect - using cell size with small margin
+        // Create path markers with glowing effect
         const pathGeometry = new THREE.BoxGeometry(
-            CONFIG.maze.cellSize * 0.9, // 90% of cell size for small wall clearance
-            0.05,                       // Slightly thicker for better visibility
-            CONFIG.maze.cellSize * 0.9  // 90% of cell size for small wall clearance
+            CONFIG.maze.cellSize * 0.9,
+            0.05,
+            CONFIG.maze.cellSize * 0.9
         );
 
         // Create materials for the path markers
@@ -304,36 +307,31 @@ class MazeRenderer {
 
         path.forEach((position, index) => {
             setTimeout(() => {
-                // Create path marker group
                 const markerGroup = new THREE.Group();
 
-                // Calculate exact center position of the cell
+                // Calculate exact center position
                 const centerX = position[0] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
                 const centerZ = position[1] * CONFIG.maze.cellSize + (CONFIG.maze.cellSize / 2);
 
                 // Main marker
                 const pathMarker = new THREE.Mesh(pathGeometry, pathMaterial);
-                pathMarker.position.set(
-                    centerX,
-                    0.01,
-                    centerZ
-                );
+                pathMarker.position.set(centerX, 0.03, centerZ);
                 markerGroup.add(pathMarker);
 
-                // Glow effect - same size as marker for consistency
+                // Glow effect
                 const glowMarker = new THREE.Mesh(pathGeometry.clone(), glowMaterial);
-                glowMarker.scale.set(1.05, 1, 1.05); // Just slightly larger for glow effect
+                glowMarker.scale.set(1.05, 1, 1.05);
                 glowMarker.position.copy(pathMarker.position);
                 markerGroup.add(glowMarker);
 
-                // Add number marker for step sequence
+                // Add step number
                 if (index > 0 && index < path.length - 1) {
                     const stepNumber = this.createStepNumber(index, position, pathColor);
                     markerGroup.add(stepNumber);
                 }
 
+                markerGroup.isExplorationMarker = true;
                 this.maze.add(markerGroup);
-                console.log('[Renderer] Added path marker at:', position);
             }, index * CONFIG.animation.pathShowDelay);
         });
     }
@@ -371,5 +369,46 @@ class MazeRenderer {
         sprite.scale.set(0.5, 0.5, 1);
 
         return sprite;
+    }
+
+    showExplorationStep(position, isBacktracking = false) {
+        // Create marker for explored cell
+        const markerGeometry = new THREE.BoxGeometry(
+            CONFIG.maze.cellSize * 0.8,
+            0.02,
+            CONFIG.maze.cellSize * 0.8
+        );
+
+        // Different colors for exploration vs backtracking
+        const markerMaterial = new THREE.MeshBasicMaterial({
+            color: isBacktracking ? 0xFF6B6B : 0x4CAF50,
+            transparent: true,
+            opacity: 0.5
+        });
+
+        const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+
+        // Position marker at cell center
+        marker.position.set(
+            position[0] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2,
+            0.02, // Just above the floor
+            position[1] * CONFIG.maze.cellSize + CONFIG.maze.cellSize / 2
+        );
+
+        this.maze.add(marker);
+        return marker;
+    }
+
+    clearExplorationMarkers() {
+        if (this.maze) {
+            // Remove all exploration markers
+            const markersToRemove = [];
+            this.maze.traverse((child) => {
+                if (child.isExplorationMarker) {
+                    markersToRemove.push(child);
+                }
+            });
+            markersToRemove.forEach(marker => this.maze.remove(marker));
+        }
     }
 }

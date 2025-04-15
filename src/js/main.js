@@ -74,20 +74,24 @@ class MazeApp {
 
             switch (this.currentAlgorithm) {
                 case 'bfs':
-                    algorithm = new BFSAlgorithm(mazeData);
+                    algorithm = new BFS(mazeData);
                     break;
                 case 'dfs':
-                    algorithm = new DFSAlgorithm(mazeData);
+                    algorithm = new DFS(mazeData);
                     break;
                 case 'astar':
-                    algorithm = new AStarAlgorithm(mazeData);
+                    algorithm = new AStar(mazeData);
                     break;
                 default:
                     throw new Error('Invalid algorithm selected');
             }
 
-            // Find path first
-            this.currentPath = await algorithm.search();
+            // Find path using the new solve method
+            this.currentPath = await algorithm.solve(
+                mazeData.inicio,
+                mazeData.fin,
+                this.renderer
+            );
 
             if (!this.currentPath) {
                 alert('No path found!');
@@ -96,7 +100,13 @@ class MazeApp {
 
             console.log('[MazeApp] Path found:', this.currentPath);
 
-            // Follow path step by step
+            // Wait a moment before showing the final path
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Highlight the final path
+            this.renderer.highlightPath(this.currentPath, this.currentAlgorithm);
+
+            // Follow path step by step with the robot
             for (let i = 1; i < this.currentPath.length; i++) {
                 const success = await this.robot.moveTo(this.currentPath[i]);
                 if (!success) {
@@ -110,8 +120,6 @@ class MazeApp {
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
 
-            // Highlight the complete path with the current algorithm's color
-            this.renderer.highlightPath(this.currentPath, this.currentAlgorithm);
             console.log('[MazeApp] Simulation completed');
 
         } catch (error) {
@@ -140,6 +148,59 @@ class MazeApp {
         document.getElementById('stepCount').textContent = steps;
         document.getElementById('timeElapsed').textContent = time.toFixed(2) + 's';
         console.log('[MazeApp] Stats updated - Steps:', steps, 'Time:', time.toFixed(2) + 's');
+    }
+
+    async runAlgorithm() {
+        if (this.isSimulating) return;
+        this.isSimulating = true;
+
+        const algorithm = this.currentAlgorithm;
+        if (!algorithm) {
+            console.error('[MazeApp] No algorithm selected');
+            this.isSimulating = false;
+            return;
+        }
+
+        console.log('[MazeApp] Running algorithm:', algorithm);
+        const startTime = performance.now();
+
+        try {
+            // Clear any existing path visualization
+            if (this.renderer) {
+                this.renderer.clearExplorationMarkers();
+            }
+
+            // Run the pathfinding algorithm
+            const path = await algorithm.solve(
+                this.mazeLoader.maze.inicio,
+                this.mazeLoader.maze.fin,
+                this.renderer
+            );
+
+            const endTime = performance.now();
+            const timeElapsed = ((endTime - startTime) / 1000).toFixed(2);
+
+            if (path) {
+                console.log('[MazeApp] Path found:', path);
+                document.getElementById('stepCount').textContent = path.length;
+                document.getElementById('timeElapsed').textContent = timeElapsed + 's';
+
+                // Highlight the final path
+                if (this.renderer) {
+                    setTimeout(() => {
+                        this.renderer.highlightPath(path);
+                    }, 500); // Wait a bit before showing the final path
+                }
+            } else {
+                console.log('[MazeApp] No path found');
+                document.getElementById('stepCount').textContent = '0';
+                document.getElementById('timeElapsed').textContent = timeElapsed + 's';
+            }
+        } catch (error) {
+            console.error('[MazeApp] Error running algorithm:', error);
+        }
+
+        this.isSimulating = false;
     }
 }
 
