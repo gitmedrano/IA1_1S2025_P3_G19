@@ -234,12 +234,14 @@ class MazeRenderer {
         // Create canvas for text
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        canvas.width = 64;
-        canvas.height = 32;
+        canvas.width = 128;  // Increased canvas size
+        canvas.height = 64;  // Increased canvas size
 
-        // Draw text
-        context.fillStyle = 'white';
-        context.font = 'bold 24px Arial';
+        // Draw text with larger font and better contrast
+        context.fillStyle = 'white';  // Add black background for better contrast
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = 'black';  // White text
+        context.font = 'bold 48px Arial';  // Increased font size
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -251,9 +253,9 @@ class MazeRenderer {
             transparent: true
         });
 
-        // Create sprite
+        // Create sprite with larger scale
         const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(0.5, 0.25, 1);
+        sprite.scale.set(1.0, 0.5, 1.0);  // Doubled the scale
 
         return sprite;
     }
