@@ -1,3 +1,6 @@
+// Import OrbitControls
+const OrbitControls = THREE.OrbitControls;
+
 class MazeRenderer {
     constructor(container) {
         this.container = container;
@@ -89,30 +92,14 @@ class MazeRenderer {
     }
 
     setupControls() {
-        console.log('[Renderer] Setting up controls');
-        try {
-            this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-
-            // Apply all control settings from config
-            const controlConfig = CONFIG.camera.controls;
-            this.controls.enableDamping = controlConfig.enableDamping;
-            this.controls.dampingFactor = controlConfig.dampingFactor;
-            this.controls.screenSpacePanning = false;
-            this.controls.minDistance = controlConfig.minDistance;
-            this.controls.maxDistance = controlConfig.maxDistance;
-            this.controls.minPolarAngle = controlConfig.minPolarAngle * Math.PI / 180;
-            this.controls.maxPolarAngle = controlConfig.maxPolarAngle * Math.PI / 180;
-            this.controls.rotateSpeed = controlConfig.rotateSpeed;
-            this.controls.zoomSpeed = controlConfig.zoomSpeed;
-            this.controls.panSpeed = controlConfig.panSpeed;
-            this.controls.enableRotate = controlConfig.enableRotate;
-            this.controls.autoRotate = controlConfig.autoRotate;
-            this.controls.autoRotateSpeed = controlConfig.autoRotateSpeed;
-
-            console.log('[Renderer] Controls setup completed');
-        } catch (error) {
-            console.error('[Renderer] Error setting up OrbitControls:', error);
-        }
+        console.log('[Renderer] Setting up camera controls');
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        this.controls.screenSpacePanning = false;
+        this.controls.minDistance = 3;
+        this.controls.maxDistance = 20;
+        this.controls.maxPolarAngle = Math.PI / 2;
     }
 
     createMaze(mazeData) {
