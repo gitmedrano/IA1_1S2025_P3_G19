@@ -97,8 +97,8 @@ class MazeRenderer {
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
         this.controls.screenSpacePanning = false;
-        this.controls.minDistance = 3;
-        this.controls.maxDistance = 20;
+        this.controls.minDistance = 5;
+        this.controls.maxDistance = 100;
         this.controls.maxPolarAngle = Math.PI / 2;
     }
 
