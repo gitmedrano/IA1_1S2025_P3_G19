@@ -86,6 +86,13 @@ class Robot {
                         this.actions.walk.play();
                         this.setWeight(this.actions.walk, 1);
 
+                        // Log animation state
+                        console.log('[Robot] Walk animation state:', {
+                            isRunning: this.actions.walk.isRunning(),
+                            weight: this.actions.walk.getEffectiveWeight(),
+                            timeScale: this.actions.walk.getEffectiveTimeScale()
+                        });
+
                         this.modelLoaded = true;
                     } else {
                         console.warn('Robot model has insufficient animations');

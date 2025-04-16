@@ -45,13 +45,12 @@ class MazeApp {
         this.renderer = new MazeRenderer(container);
         this.renderer.createMaze(mazeData);
 
-
         // Create robot at start position with maze data for collision detection
         this.robot = new Robot(this.renderer.scene, mazeData.inicio, mazeData, false);
+        this.renderer.robot = this.robot; // Set the robot reference in the renderer
         this.robot.startWalking();
         // this.robot.actions.walk.play();
         // this.robot.actions.walk.setLoop(THREE.LoopRepeat, Infinity);
-
 
         // Reset stats
         this.updateStats(0, 0);

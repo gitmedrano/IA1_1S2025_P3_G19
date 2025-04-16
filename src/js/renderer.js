@@ -276,14 +276,15 @@ class MazeRenderer {
     animate() {
         requestAnimationFrame(() => this.animate());
 
+        const delta = this.clock.getDelta();
+
         // Update controls
         if (this.controls) {
             this.controls.update();
         }
 
-        // Update robot animations
+        // Update robot animations if it exists
         if (this.robot) {
-            const delta = this.clock.getDelta();
             this.robot.update(delta);
         }
 
