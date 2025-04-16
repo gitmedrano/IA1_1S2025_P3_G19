@@ -125,6 +125,7 @@ class MazeApp {
             }
 
             console.log('[MazeApp] Simulation completed');
+            this.renderer.robot.stopWalking();
 
         } catch (error) {
             console.error('[MazeApp] Simulation error:', error);

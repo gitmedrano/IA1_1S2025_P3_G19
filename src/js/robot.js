@@ -173,7 +173,7 @@ class Robot {
                 idle: this.actions.idle.isRunning(),
                 walk: this.actions.walk.isRunning()
             });
-            // this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.2); // Faster transition
+            this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.2); // Faster transition
         } else {
             console.warn('[Robot] Missing required animations:', {
                 hasIdle: !!this.actions.idle,
@@ -271,18 +271,18 @@ class Robot {
         } else if (this.mixer) {
             // Update animation mixer
             this.mixer.update(delta);
-            console.log('[Robot] Mixer updated, delta:', delta);
+            // console.log('[Robot] Mixer updated, delta:', delta);
 
             // Update weights
             this.weights.idle = this.actions.idle ? this.actions.idle.getEffectiveWeight() : 0;
             this.weights.walk = this.actions.walk ? this.actions.walk.getEffectiveWeight() : 0;
             this.weights.run = this.actions.run ? this.actions.run.getEffectiveWeight() : 0;
 
-            console.log('[Robot] Current animation weights:', {
-                idle: this.weights.idle,
-                walk: this.weights.walk,
-                run: this.weights.run
-            });
+            // console.log('[Robot] Current animation weights:', {
+            //     idle: this.weights.idle,
+            //     walk: this.weights.walk,
+            //     run: this.weights.run
+            // });
         }
     }
 
