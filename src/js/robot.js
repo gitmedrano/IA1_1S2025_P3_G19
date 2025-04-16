@@ -21,6 +21,7 @@ class Robot {
             walk: 0,
             run: 0
         };
+        this.modelLoaded = false;
         console.log('[Robot] Initialized at position:', startPosition);
         console.log('[Robot] Walls:', this.walls);
         this.loadRobotModel();
@@ -80,9 +81,12 @@ class Robot {
                         this.actions.walk = this.mixer.clipAction(animations[3]);
                         this.actions.run = this.mixer.clipAction(animations[1]);
 
-                        // Initialize with idle animation
-                        this.setWeight(this.actions.idle, 1);
+                        // Start with walk animation immediately
+                        this.actions.walk.setLoop(THREE.LoopRepeat, Infinity);
                         this.actions.walk.play();
+                        this.setWeight(this.actions.walk, 1);
+
+                        this.modelLoaded = true;
                     } else {
                         console.warn('Robot model has insufficient animations');
                     }
@@ -130,6 +134,10 @@ class Robot {
 
     startWalking() {
         if (this.useCube) return;
+        if (!this.modelLoaded) {
+            console.log('[Robot] Model not loaded yet, waiting...');
+            return;
+        }
 
         console.log('[Robot] Starting walk animation');
         if (this.actions.idle && this.actions.walk) {
@@ -137,8 +145,9 @@ class Robot {
                 idle: this.actions.idle.isRunning(),
                 walk: this.actions.walk.isRunning()
             });
-            this.prepareCrossFade(this.actions.idle, this.actions.walk, 0.2); // Faster transition
-            this.actions.walk.setLoop(THREE.LoopRepeat, Infinity); // Make walk animation loop
+            this.prepareCrossFade(this.actions.idle, this.actions.walk, 0.2);
+            this.actions.walk.setLoop(THREE.LoopRepeat, Infinity);
+            this.actions.walk.play();
         } else {
             console.warn('[Robot] Missing required animations:', {
                 hasIdle: !!this.actions.idle,
@@ -156,7 +165,7 @@ class Robot {
                 idle: this.actions.idle.isRunning(),
                 walk: this.actions.walk.isRunning()
             });
-            this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.2); // Faster transition
+            // this.prepareCrossFade(this.actions.walk, this.actions.idle, 0.2); // Faster transition
         } else {
             console.warn('[Robot] Missing required animations:', {
                 hasIdle: !!this.actions.idle,

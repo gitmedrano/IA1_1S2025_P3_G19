@@ -45,9 +45,13 @@ class MazeApp {
         this.renderer = new MazeRenderer(container);
         this.renderer.createMaze(mazeData);
 
+
         // Create robot at start position with maze data for collision detection
-        this.robot = new Robot(this.renderer.scene, mazeData.inicio, mazeData, true);
+        this.robot = new Robot(this.renderer.scene, mazeData.inicio, mazeData, false);
         this.robot.startWalking();
+        // this.robot.actions.walk.play();
+        // this.robot.actions.walk.setLoop(THREE.LoopRepeat, Infinity);
+
 
         // Reset stats
         this.updateStats(0, 0);
@@ -209,4 +213,4 @@ class MazeApp {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[MazeApp] DOM loaded, creating application instance');
     new MazeApp();
-}); 
+});
