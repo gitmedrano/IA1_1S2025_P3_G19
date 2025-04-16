@@ -98,8 +98,9 @@ class Robot {
                         console.warn('Robot model has insufficient animations');
                     }
 
-                    // Set initial position
+                    // Set initial position and rotation
                     this.updatePosition(this.currentPosition);
+                    this.mesh.rotation.y = Math.PI; // Initial rotation to face forward
                     this.scene.add(this.mesh);
                     console.log('[Robot] Robot model loaded and added to scene');
                 },
@@ -226,9 +227,6 @@ class Robot {
             this.isMoving = true;
             this.targetPosition = position;
 
-            // Start walking animation
-            this.startWalking();
-
             const startPos = new THREE.Vector3(
                 this.currentPosition[0] * CONFIG.maze.cellSize,
                 CONFIG.robot.height / 2,
@@ -241,9 +239,15 @@ class Robot {
             );
 
             const direction = endPos.clone().sub(startPos);
-            const angle = Math.atan2(direction.x, direction.z);
+            const newAngle = Math.atan2(direction.x, direction.z);
 
-            await this.rotateToAngle(angle);
+            // Only rotate if the angle is different from current rotation
+            const currentAngle = (this.mesh.rotation.y - Math.PI) % (2 * Math.PI); // Subtract the PI offset we added
+            const angleDiff = Math.abs(newAngle - currentAngle) % (2 * Math.PI);
+            if (angleDiff > 0.1) { // Add small threshold to avoid tiny rotations
+                await this.rotateToAngle(newAngle);
+            }
+
             await this.animateMovement(startPos, endPos);
 
             this.currentPosition = position;
@@ -254,11 +258,8 @@ class Robot {
             return false;
         } finally {
             this.isMoving = false;
-            // Stop walking animation
-            // this.stopWalking();
         }
     }
-
     update(delta) {
         if (this.useCube) {
             // Add spinning animation to the cube
@@ -293,10 +294,15 @@ class Robot {
             const duration = Math.abs(normalizedAngleDiff) / CONFIG.robot.rotationSpeed;
             const startTime = performance.now();
 
+            // Add PI to make the model face the direction of movement
+            const finalAngle = targetAngle + Math.PI;
+
             const animate = (currentTime) => {
                 const elapsed = (currentTime - startTime) / 1000;
                 const progress = Math.min(elapsed / duration, 1);
-                this.mesh.rotation.y = startAngle + normalizedAngleDiff * progress;
+
+                // Rotate to face the direction of movement
+                this.mesh.rotation.y = startAngle + normalizedAngleDiff * progress + Math.PI;
 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
