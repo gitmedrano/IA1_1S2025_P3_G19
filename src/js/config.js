@@ -14,6 +14,7 @@ const CONFIG = {
         colors: {
             floor: 0x808080,    // Gray
             wall: 0x4A90E2,     // Blue
+            // wall: 0xD32F2F,     // Red
             outerWall: 0x34495e, // Dark blue for outer walls
             start: 0x2ECC71,    // Green
             end: 0xE74C3C,      // Red
