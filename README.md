@@ -1,161 +1,161 @@
-# MazeBot - 3D Maze Solving Simulator
+# MazeBot - Simulador de Resolución de Laberintos 3D
 
-## Project Structure
+## Estructura del Proyecto
 ```
 IA1_1S2025_P3_G19/
-├── index.html              # Main application entry point
+├── index.html              # Punto de entrada principal de la aplicación
 ├── src/
 │   ├── js/
-│   │   ├── config.js      # Configuration settings
-│   │   ├── mazeLoader.js  # JSON maze file loader
-│   │   ├── renderer.js    # Three.js visualization
-│   │   ├── robot.js       # Robot movement and animation
-│   │   └── main.js        # Main application logic
+│   │   ├── config.js      # Configuraciones
+│   │   ├── mazeLoader.js  # Cargador de archivos JSON del laberinto
+│   │   ├── renderer.js    # Visualización con Three.js
+│   │   ├── robot.js       # Movimiento y animación del robot
+│   │   └── main.js        # Lógica principal de la aplicación
 │   ├── algorithms/
-│   │   ├── bfs.js         # Breadth-First Search implementation
-│   │   ├── dfs.js         # Depth-First Search implementation
-│   │   └── astar.js       # A* Search implementation
+│   │   ├── bfs.js         # Implementación de Búsqueda en Anchura
+│   │   ├── dfs.js         # Implementación de Búsqueda en Profundidad
+│   │   └── astar.js       # Implementación de Búsqueda A*
 │   └── css/
-│       └── styles.css     # Application styling
-└── sample_maze.json       # Example maze file
+│       └── styles.css     # Estilos de la aplicación
+└── sample_maze.json       # Archivo de ejemplo del laberinto
 ```
 
-## Features
-- Interactive 3D visualization of maze solving algorithms
-- Three pathfinding algorithms:
-  - Breadth-First Search (BFS)
-  - Depth-First Search (DFS)
-  - A* Search
-- Real-time visualization of robot movement
-- Camera controls for viewing from different angles
-- Custom maze loading via JSON files
-- Real-time statistics tracking
+## Características
+- Visualización interactiva 3D de algoritmos de resolución de laberintos
+- Tres algoritmos de búsqueda de caminos:
+  - Búsqueda en Anchura (BFS)
+  - Búsqueda en Profundidad (DFS)
+  - Búsqueda A*
+- Visualización en tiempo real del movimiento del robot
+- Controles de cámara para ver desde diferentes ángulos
+- Carga de laberintos personalizados mediante archivos JSON
+- Seguimiento de estadísticas en tiempo real
 
-## Technologies Used
-- Three.js for 3D rendering
-- Native JavaScript (ES6+)
-- HTML5 & CSS3
-- JSON for maze data
+## Tecnologías Utilizadas
+- Three.js para renderizado 3D
+- JavaScript nativo (ES6+)
+- HTML5 y CSS3
+- JSON para datos del laberinto
 
-## Setup and Running
-1. Clone the repository
-2. Start a local server:
+## Configuración y Ejecución
+1. Clonar el repositorio
+2. Iniciar un servidor local:
    ```bash
-   # Using Python 3
+   # Usando Python 3
    python -m http.server 5500
    ```
-3. Open your browser and navigate to `http://localhost:5500`
+3. Abrir el navegador y navegar a `http://localhost:5500`
 
-## Maze File Format
+## Formato del Archivo del Laberinto
 ```json
 {
-    "ancho": 10,    // Width of the maze
-    "alto": 10,     // Height of the maze
-    "inicio": [0, 0], // Start position [x, y]
-    "fin": [9, 9],   // End position [x, y]
-    "paredes": [     // Wall positions
+    "ancho": 10,    // Ancho del laberinto
+    "alto": 10,     // Alto del laberinto
+    "inicio": [0, 0], // Posición inicial [x, y]
+    "fin": [9, 9],   // Posición final [x, y]
+    "paredes": [     // Posiciones de las paredes
         [1, 0],
         [1, 1],
         [1, 2]
-        // ... more wall positions
+        // ... más posiciones de paredes
     ]
 }
 ```
 
-## Components
+## Componentes
 
-### 1. Main Application (main.js)
-- Initializes the application
-- Handles user interactions
-- Manages the simulation state
-- Coordinates between components
+### 1. Aplicación Principal (main.js)
+- Inicializa la aplicación
+- Maneja las interacciones del usuario
+- Gestiona el estado de la simulación
+- Coordina entre componentes
 
-### 2. Maze Loader (mazeLoader.js)
-- Handles JSON file loading
-- Validates maze data
-- Dispatches maze loaded events
+### 2. Cargador de Laberinto (mazeLoader.js)
+- Maneja la carga de archivos JSON
+- Valida los datos del laberinto
+- Despacha eventos de carga del laberinto
 
-### 3. Renderer (renderer.js)
-- Manages Three.js scene
-- Handles 3D visualization
-- Controls camera and lighting
-- Manages maze rendering
+### 3. Renderizador (renderer.js)
+- Gestiona la escena de Three.js
+- Maneja la visualización 3D
+- Controla la cámara e iluminación
+- Gestiona el renderizado del laberinto
 
 ### 4. Robot (robot.js)
-- Controls robot movement
-- Handles animations
-- Manages collision detection
+- Controla el movimiento del robot
+- Maneja las animaciones
+- Gestiona la detección de colisiones
 
-### 5. Search Algorithms
-- **BFS (bfs.js)**: Breadth-First Search implementation
-  - Explores maze level by level
-  - Guarantees shortest path
-  - Memory intensive
+### 5. Algoritmos de Búsqueda
+- **BFS (bfs.js)**: Implementación de Búsqueda en Anchura
+  - Explora el laberinto nivel por nivel
+  - Garantiza el camino más corto
+  - Intensivo en memoria
 
-- **DFS (dfs.js)**: Depth-First Search implementation
-  - Explores as far as possible along branches
-  - Memory efficient
-  - May not find shortest path
+- **DFS (dfs.js)**: Implementación de Búsqueda en Profundidad
+  - Explora lo más lejos posible a lo largo de las ramas
+  - Eficiente en memoria
+  - Puede no encontrar el camino más corto
 
-- **A* (astar.js)**: A* Search implementation
-  - Uses heuristics for intelligent searching
-  - Combines BFS efficiency with informed search
-  - Generally finds optimal path
+- **A* (astar.js)**: Implementación de Búsqueda A*
+  - Utiliza heurísticas para búsqueda inteligente
+  - Combina la eficiencia de BFS con búsqueda informada
+  - Generalmente encuentra el camino óptimo
 
-## Usage
-1. Load a maze file using the file input
-2. Select a pathfinding algorithm
-3. Click "Start Simulation" to begin
-4. Use mouse controls to view the maze:
-   - Left click + drag: Rotate
-   - Right click + drag: Pan
-   - Scroll: Zoom
+## Uso
+1. Cargar un archivo de laberinto usando la entrada de archivo
+2. Seleccionar un algoritmo de búsqueda
+3. Hacer clic en "Iniciar Simulación" para comenzar
+4. Usar controles del ratón para ver el laberinto:
+   - Clic izquierdo + arrastrar: Rotar
+   - Clic derecho + arrastrar: Desplazar
+   - Desplazamiento: Zoom
 
-## Camera Controls
-- **Rotate**: Left click + drag
-- **Pan**: Right click + drag
-- **Zoom**: Mouse wheel
-- **Reset**: Press 'R' key
+## Controles de Cámara
+- **Rotar**: Clic izquierdo + arrastrar
+- **Desplazar**: Clic derecho + arrastrar
+- **Zoom**: Rueda del ratón
+- **Reiniciar**: Presionar tecla 'R'
 
-## Statistics
-The application shows:
-- Number of steps taken
-- Time elapsed
-- Current algorithm in use
+## Estadísticas
+La aplicación muestra:
+- Número de pasos dados
+- Tiempo transcurrido
+- Algoritmo actual en uso
 
-## Development
+## Desarrollo
 
-### Adding New Algorithms
-1. Create a new file in `src/algorithms/`
-2. Implement the search algorithm class
-3. Add the algorithm option in `index.html`
-4. Register the algorithm in `main.js`
+### Agregar Nuevos Algoritmos
+1. Crear un nuevo archivo en `src/algorithms/`
+2. Implementar la clase del algoritmo de búsqueda
+3. Agregar la opción del algoritmo en `index.html`
+4. Registrar el algoritmo en `main.js`
 
-### Modifying the Maze
-1. Follow the JSON format
-2. Ensure walls are within bounds
-3. Verify start and end positions are valid
+### Modificar el Laberinto
+1. Seguir el formato JSON
+2. Asegurar que las paredes estén dentro de los límites
+3. Verificar que las posiciones de inicio y fin sean válidas
 
-### Styling
-- Modify `styles.css` for UI changes
-- Update `config.js` for 3D visualization settings
+### Estilización
+- Modificar `styles.css` para cambios en la interfaz
+- Actualizar `config.js` para configuraciones de visualización 3D
 
-## Troubleshooting
-- **Blank Screen**: Check browser console for errors
-- **Loading Issues**: Verify JSON file format
-- **Performance Issues**: Adjust CONFIG settings in config.js
+## Solución de Problemas
+- **Pantalla en Blanco**: Revisar la consola del navegador para errores
+- **Problemas de Carga**: Verificar el formato del archivo JSON
+- **Problemas de Rendimiento**: Ajustar configuraciones en config.js
 
-## Browser Support
-- Chrome (recommended)
+## Compatibilidad con Navegadores
+- Chrome (recomendado)
 - Firefox
 - Safari
 - Edge
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+## Contribuir
+1. Hacer fork del repositorio
+2. Crear una rama de características
+3. Realizar los cambios
+4. Enviar un pull request
 
-## License
-This project is licensed under the MIT License.
+## Licencia
+Este proyecto está licenciado bajo la Licencia MIT.
