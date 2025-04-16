@@ -62,13 +62,13 @@ class MazeRenderer {
 
     setupLights() {
         console.log('[Renderer] Setting up lights');
-        // Ambient light
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        // Ambient light - increase intensity
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
         this.scene.add(ambientLight);
 
-        // Main directional light (sun)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(15, 20, 15);
+        // Main directional light (sun) - adjust position and intensity
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(15, 30, 15);
         directionalLight.castShadow = true;
         this.scene.add(directionalLight);
 
@@ -83,10 +83,19 @@ class MazeRenderer {
         directionalLight.shadow.camera.bottom = -20;
         directionalLight.shadow.bias = -0.0001;
 
-        // Add fill light
-        const fillLight = new THREE.DirectionalLight(0x7ec0ee, 0.3); // Slight blue tint
+        // Add fill light from opposite direction
+        const fillLight = new THREE.DirectionalLight(0x7ec0ee, 0.8);
         fillLight.position.set(-15, 10, -15);
         this.scene.add(fillLight);
+
+        // Add a soft light from the front
+        const frontLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        frontLight.position.set(0, 10, 20);
+        this.scene.add(frontLight);
+
+        // Add a ground bounce light
+        const groundLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+        this.scene.add(groundLight);
 
         console.log('[Renderer] Lights setup completed');
     }

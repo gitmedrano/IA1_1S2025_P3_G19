@@ -9,7 +9,7 @@ const CONFIG = {
     // Maze settings
     maze: {
         cellSize: 1,           // Size of each cell in the maze
-        wallHeight: 0.1,       // Height of the walls (you can adjust this value)
+        wallHeight: 1.5,       // Height of the walls (you can adjust this value)
         wallThickness: 0.1,    // Thickness of the walls
         colors: {
             floor: 0x808080,    // Gray
