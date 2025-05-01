@@ -5,6 +5,7 @@ class AStar {
         this.parent = new Map();
         this.gScore = new Map();
         this.fScore = new Map();
+        this.explorationCount = 0;
     }
 
     async solve(start, end, renderer) {
@@ -12,19 +13,29 @@ class AStar {
         this.parent.clear();
         this.gScore.clear();
         this.fScore.clear();
+        this.explorationCount = 0;
 
         // Priority queue implemented as array for simplicity
         const openSet = [start];
         const startStr = start.toString();
 
+        console.log('[A*] Starting exploration from', start, 'to', end);
+        console.log('[A*] Initial open set size:', 1);
+
         // Initialize scores
         this.gScore.set(startStr, 0);
         this.fScore.set(startStr, this.heuristic(start, end));
+        console.log(`[A*] Initial f-score for start: ${this.fScore.get(startStr)}`);
 
         while (openSet.length > 0) {
             // Get node with lowest fScore
             const current = this.getLowestFScore(openSet, end);
             const currentStr = current.toString();
+            this.explorationCount++;
+
+            console.log(`[A*] Exploring position ${current} (Step ${this.explorationCount})`);
+            console.log(`[A*] Open set size: ${openSet.length}, Visited cells: ${this.visited.size}`);
+            console.log(`[A*] Current f-score: ${this.fScore.get(currentStr)}`);
 
             // Visualize current exploration
             if (renderer) {
@@ -34,6 +45,8 @@ class AStar {
 
             // Check if we reached the end
             if (current[0] === end[0] && current[1] === end[1]) {
+                console.log('[A*] Found path to end!');
+                console.log('[A*] Total cells explored:', this.explorationCount);
                 return this.reconstructPath(start, end);
             }
 
@@ -43,6 +56,8 @@ class AStar {
 
             // Check neighbors
             const neighbors = this.getValidNeighbors(current);
+            console.log(`[A*] Found ${neighbors.length} valid neighbors at ${current}`);
+
             for (const neighbor of neighbors) {
                 const neighborStr = neighbor.toString();
 
@@ -53,10 +68,13 @@ class AStar {
                     // This path is better than any previous one
                     this.parent.set(neighborStr, current);
                     this.gScore.set(neighborStr, tentativeGScore);
-                    this.fScore.set(neighborStr, tentativeGScore + this.heuristic(neighbor, end));
+                    const fScore = tentativeGScore + this.heuristic(neighbor, end);
+                    this.fScore.set(neighborStr, fScore);
+                    console.log(`[A*] Updated scores for ${neighbor}: g=${tentativeGScore}, f=${fScore}`);
 
                     if (!openSet.some(pos => pos[0] === neighbor[0] && pos[1] === neighbor[1])) {
                         openSet.push(neighbor);
+                        console.log(`[A*] Added new neighbor to open set: ${neighbor}`);
                     }
 
                     // Visualize considering this neighbor
@@ -68,6 +86,7 @@ class AStar {
             }
         }
 
+        console.log('[A*] No path found after exploring', this.explorationCount, 'cells');
         return null; // No path found
     }
 

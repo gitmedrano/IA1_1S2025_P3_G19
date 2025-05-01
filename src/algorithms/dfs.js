@@ -3,25 +3,35 @@ class DFS {
         this.maze = maze;
         this.visited = new Set();
         this.parent = new Map();
+        this.explorationCount = 0;
     }
 
     async solve(start, end, renderer) {
         this.visited.clear();
         this.parent.clear();
+        this.explorationCount = 0;
 
+        console.log('[DFS] Starting exploration from', start, 'to', end);
         const found = await this.dfs(start, end, renderer);
         if (found) {
+            console.log('[DFS] Found path to end!');
+            console.log('[DFS] Total cells explored:', this.explorationCount);
             return this.reconstructPath(start, end);
         }
+        console.log('[DFS] No path found after exploring', this.explorationCount, 'cells');
         return null;
     }
 
     async dfs(current, end, renderer) {
         const currentStr = current.toString();
         const endStr = end.toString();
+        this.explorationCount++;
 
         // Mark as visited and show exploration
         this.visited.add(currentStr);
+        console.log(`[DFS] Exploring position ${current} (Step ${this.explorationCount})`);
+        console.log(`[DFS] Visited cells: ${this.visited.size}`);
+
         if (renderer) {
             renderer.showExplorationStep(current, 0xD32F2F);
             // Add delay to see the exploration
@@ -35,12 +45,14 @@ class DFS {
 
         // Get valid neighbors
         const neighbors = this.getValidNeighbors(current);
+        console.log(`[DFS] Found ${neighbors.length} valid neighbors at ${current}`);
 
         // Try each neighbor
         for (const neighbor of neighbors) {
             const neighborStr = neighbor.toString();
             if (!this.visited.has(neighborStr)) {
                 this.parent.set(neighborStr, current);
+                console.log(`[DFS] Exploring neighbor: ${neighbor}`);
                 if (await this.dfs(neighbor, end, renderer)) {
                     return true;
                 }
@@ -49,6 +61,7 @@ class DFS {
                     renderer.showExplorationStep(neighbor, 0xD32F2F, true);
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
+                console.log(`[DFS] Backtracking from ${neighbor}`);
             }
         }
 

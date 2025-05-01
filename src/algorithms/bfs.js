@@ -4,16 +4,21 @@ class BFS {
         this.visited = new Set();
         this.queue = [];
         this.parent = new Map();
+        this.explorationCount = 0;
     }
 
     async solve(start, end, renderer) {
         this.visited.clear();
         this.queue = [];
         this.parent.clear();
+        this.explorationCount = 0;
 
         // Convert start and end to strings for comparison
         const startStr = start.toString();
         const endStr = end.toString();
+
+        console.log('[BFS] Starting exploration from', start, 'to', end);
+        console.log('[BFS] Initial queue size:', 1);
 
         // Initialize with start position
         this.queue.push(start);
@@ -22,6 +27,10 @@ class BFS {
         while (this.queue.length > 0) {
             const current = this.queue.shift();
             const currentStr = current.toString();
+            this.explorationCount++;
+
+            console.log(`[BFS] Exploring position ${current} (Step ${this.explorationCount})`);
+            console.log(`[BFS] Queue size: ${this.queue.length}, Visited cells: ${this.visited.size}`);
 
             // Visualize current exploration
             if (renderer) {
@@ -32,11 +41,14 @@ class BFS {
 
             // If we reached the end, reconstruct and return the path
             if (currentStr === endStr) {
+                console.log('[BFS] Found path to end!');
+                console.log('[BFS] Total cells explored:', this.explorationCount);
                 return this.reconstructPath(start, end);
             }
 
             // Get valid neighbors
             const neighbors = this.getValidNeighbors(current);
+            console.log(`[BFS] Found ${neighbors.length} valid neighbors at ${current}`);
 
             for (const neighbor of neighbors) {
                 const neighborStr = neighbor.toString();
@@ -44,10 +56,12 @@ class BFS {
                     this.visited.add(neighborStr);
                     this.parent.set(neighborStr, current);
                     this.queue.push(neighbor);
+                    console.log(`[BFS] Added new neighbor to queue: ${neighbor}`);
                 }
             }
         }
 
+        console.log('[BFS] No path found after exploring', this.explorationCount, 'cells');
         return null; // No path found
     }
 
