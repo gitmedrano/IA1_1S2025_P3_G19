@@ -12,6 +12,12 @@ class DFS {
         this.explorationCount = 0;
 
         console.log('[DFS] Starting exploration from', start, 'to', end);
+
+        // Move robot to start position
+        if (renderer && renderer.robot) {
+            await renderer.robot.moveTo(start);
+        }
+
         const found = await this.dfs(start, end, renderer);
         if (found) {
             console.log('[DFS] Found path to end!');
@@ -31,6 +37,11 @@ class DFS {
         this.visited.add(currentStr);
         console.log(`[DFS] Exploring position ${current} (Step ${this.explorationCount})`);
         console.log(`[DFS] Visited cells: ${this.visited.size}`);
+
+        // Move robot to current position
+        if (renderer && renderer.robot) {
+            await renderer.robot.moveTo(current);
+        }
 
         if (renderer) {
             renderer.showExplorationStep(current, 0xD32F2F);
@@ -62,6 +73,14 @@ class DFS {
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
                 console.log(`[DFS] Backtracking from ${neighbor}`);
+
+                // Move robot back to parent position
+                if (renderer && renderer.robot) {
+                    const parent = this.parent.get(neighborStr);
+                    if (parent) {
+                        await renderer.robot.moveTo(parent);
+                    }
+                }
             }
         }
 
