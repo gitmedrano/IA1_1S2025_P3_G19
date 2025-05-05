@@ -31,6 +31,9 @@ IA1_1S2025_P3_G19/
 ├── assets/
 │   └── textures/
 ├── index.html              # Página principal de la aplicación
+├── manuales                # Manual de Usuario y Manual Técnico
+    ├── [IA1]Proyecto3_Manual_Usuario.pdf
+    └── [IA1]Proyecto3_Manual_Tecnico.pdf
 ├── test_robot.html         # Página de pruebas del robot
 ├── testdos.html           # Página de pruebas adicionales
 ├── testtres.html          # Página de pruebas avanzadas
