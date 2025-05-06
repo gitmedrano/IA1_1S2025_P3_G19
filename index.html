@@ -182,6 +182,7 @@
         <div class="control-group">
             <button id="startBtn">Start Simulation</button>
             <button id="resetBtn">Reset</button>
+            <button id="toggleLabelsBtn">Hide Labels</button>
         </div>
     </div>
 
@@ -218,6 +219,13 @@
                 desc.style.opacity = 0;
                 setTimeout(function () { desc.style.display = 'none'; }, 600);
             }
+        });
+
+        // Agregar funcionalidad para el botón de etiquetas
+        document.getElementById('toggleLabelsBtn').addEventListener('click', function () {
+            const button = this;
+            const isVisible = window.mazeApp.renderer.toggleLabels();
+            button.textContent = isVisible ? 'Hide Labels' : 'Show Labels';
         });
     </script>
 </body>

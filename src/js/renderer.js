@@ -11,6 +11,7 @@ class MazeRenderer {
         this.maze = null;
         this.robot = null;
         this.clock = new THREE.Clock();
+        this.showLabels = true;
         console.log('[Renderer] Initializing...');
 
         this.init();
@@ -271,8 +272,21 @@ class MazeRenderer {
         // Create sprite with larger scale
         const sprite = new THREE.Sprite(spriteMaterial);
         sprite.scale.set(1.0, 0.5, 1.0);  // Doubled the scale
+        sprite.visible = this.showLabels;
 
         return sprite;
+    }
+
+    toggleLabels() {
+        this.showLabels = !this.showLabels;
+        if (this.maze) {
+            this.maze.traverse((child) => {
+                if (child instanceof THREE.Sprite) {
+                    child.visible = this.showLabels;
+                }
+            });
+        }
+        return this.showLabels;
     }
 
     onWindowResize() {

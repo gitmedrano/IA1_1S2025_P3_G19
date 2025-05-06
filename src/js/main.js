@@ -10,6 +10,8 @@ class MazeApp {
         console.log('[MazeApp] Initializing application');
 
         this.setupEventListeners();
+        // Hacer la instancia accesible globalmente
+        window.mazeApp = this;
     }
 
     setupEventListeners() {
