@@ -25,7 +25,7 @@ class RobotTest {
         return new Promise((resolve, reject) => {
             const loader = new THREE.GLTFLoader();
             loader.load(
-                '.././src/models/Soldier.glb',
+                '/IA1_1S2025_P3_G19/src/models/Soldier.glb',
                 (gltf) => {
                     this.mesh = gltf.scene;
                     this.mesh.traverse((child) => {
