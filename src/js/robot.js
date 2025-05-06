@@ -52,7 +52,7 @@ class Robot {
             // Use the global THREE.GLTFLoader that's already imported in index.html
             const loader = new THREE.GLTFLoader();
             loader.load(
-                '/IA1_1S2025_P3_G19/src/models/Soldier.glb',
+                './src/models/Soldier.glb',
                 (gltf) => {
                     this.mesh = gltf.scene;
                     this.mesh.traverse((child) => {
